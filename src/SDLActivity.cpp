@@ -29,7 +29,7 @@ CApp::~CApp()
 int CApp::OnInit()
 {
     // Initialize the SDL library.
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "SDL_Init() failed: %s\n", SDL_GetError());
         return APP_FAILED;
     }
