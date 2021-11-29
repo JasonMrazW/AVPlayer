@@ -5,7 +5,7 @@
 //  Created by bo on 2021/11/26.
 //
 
-#include "SDLActivity.hpp"
+#include "SDLImagePlayer.hpp"
 
 
 // ============================================================================
