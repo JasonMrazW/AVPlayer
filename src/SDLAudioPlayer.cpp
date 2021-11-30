@@ -112,6 +112,27 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
 
     len = len > audio_length ? audio_length : len;
 
+    //单声道变换
+    playSingleChannel(len);
+
+    // 基于左声道数据，进行音量减半的处理
+    halfToVolumn(len);
+
+    //混合播放
+    SDL_MixAudioFormat(stream, audio_pos, audioFormat, len, SDL_MIX_MAXVOLUME);
+    //SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
+
+    //单独播放audio_pos
+    //memcpy(stream, audio_pos, len);
+    audio_pos += len;
+    audio_length -= len;
+
+    if (audio_length <= 0) {
+        notifyGetAudioFrame();
+    }
+}
+
+void SDLAudioPlayer::playSingleChannel(int len) {
     for (int i = 0; i < len;) {
         //播放右声道，仅保留右声道的数据，左声道数据置为0
 //        if (i % 4 == 0) {
@@ -121,8 +142,8 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
 //        }
 
         //播放左声道，仅保留左声道的数据，右声道数据置为0
-        // L L R R L L R R L L R
-        // 0 1 2 3 4 5 6 7 8 9 10
+//         L L R R L L R R L L R
+//         0 1 2 3 4 5 6 7 8 9 10
         if (i == 0) i += 2;
         if ((i+2) % 4 == 0) {
             audio_pos[i] = 0;
@@ -130,8 +151,9 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
             i += 4;
         }
     }
+}
 
-    // 基于左声道数据，进行音量减半的处理
+void SDLAudioPlayer::halfToVolumn(int len) {
     for (int i = 0; i < len; ) {
         short temp = getShort(audio_pos[i+1], audio_pos[i]);
         temp = temp * factor;
@@ -139,23 +161,6 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
         audio_pos[i] = (char)(temp & 0x00FF);
         audio_pos[i+1] = (char)(temp >> 8);
         i += 2;
-    }
-
-    //混合播放
-    SDL_MixAudioFormat(stream, audio_pos, audioFormat, len, SDL_MIX_MAXVOLUME);
-    //SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
-
-    //单独播放audio_pos
-    //memcpy(stream, audio_pos, len);
-
-
-
-
-    audio_pos += len;
-    audio_length -= len;
-
-    if (audio_length <= 0) {
-        notifyGetAudioFrame();
     }
 }
 
@@ -176,3 +181,4 @@ int SDLAudioPlayer::sdl_thread_custom_event(void *){
 short SDLAudioPlayer::getShort(char high, char low) {
     return (short)((high<< 8)|(low & 0xFF));
 }
+

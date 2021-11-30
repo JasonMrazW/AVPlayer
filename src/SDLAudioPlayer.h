@@ -56,6 +56,10 @@ private:
     static int sdl_thread_custom_event(void *);
 
     static short getShort(char high, char low);
+
+    static void halfToVolumn(int len);
+
+    static void playSingleChannel(int len);
 };
 
 
