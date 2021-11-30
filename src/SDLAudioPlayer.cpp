@@ -200,6 +200,10 @@ void SDLAudioPlayer::playSingleChannel(int len) {
     }
 }
 
+/**
+ * 音量调整
+ * @param len
+ */
 void SDLAudioPlayer::halfToVolumn(int len) {
     for (int i = 0; i < len; ) {
         short temp = getShort(audio_pos[i+1], audio_pos[i]);
@@ -225,6 +229,12 @@ int SDLAudioPlayer::sdl_thread_custom_event(void *){
     notifyGetAudioFrame();
 }
 
+/**
+ * 两个char组合成一个short
+ * @param high
+ * @param low
+ * @return
+ */
 short SDLAudioPlayer::getShort(char high, char low) {
     return (short)((high<< 8)|(low & 0xFF));
 }
