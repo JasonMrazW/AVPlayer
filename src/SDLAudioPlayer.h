@@ -32,11 +32,12 @@ private:
     static Uint32 audio_length; // audio file length
     static Uint8 *audio_pos; //current position
     static const Uint32 SDL_EVENT_BUFFER_END;
+    static unsigned short audioFormat;
     SDL_AudioSpec audioSpec;
     SDL_AudioDeviceID audioDeviceId;
 
     static char * pcm_buffer;
-    int pcm_buffer_size = 4096;
+    int pcm_buffer_size = 4096*2;
     std::ifstream audioStream;
 
     int onInit(char *audioPath);

@@ -8,6 +8,7 @@ Uint8 * SDLAudioPlayer::audio_chunk;
 Uint32 SDLAudioPlayer::audio_length;
 Uint8 * SDLAudioPlayer::audio_pos;
 char * SDLAudioPlayer::pcm_buffer;
+unsigned short SDLAudioPlayer::audioFormat;
 
 const Uint32 SDLAudioPlayer::SDL_EVENT_BUFFER_END = 1;
 
@@ -26,10 +27,12 @@ int SDLAudioPlayer::onInit(char *audioPath) {
     }
 
     //init audio info
+    audioFormat = AUDIO_S16LSB;
+
     audioSpec = SDL_AudioSpec();
     audioSpec.samples = 1024;
     audioSpec.freq = 44100;
-    audioSpec.format = AUDIO_S16LSB;
+    audioSpec.format = audioFormat;
     audioSpec.channels = 2;
     audioSpec.silence = 0;
     audioSpec.callback = fillDataCallBack;
@@ -43,6 +46,7 @@ int SDLAudioPlayer::onInit(char *audioPath) {
 }
 
 void SDLAudioPlayer::onClean() {
+    audioStream.close();
     SDL_Quit();
 }
 
@@ -94,6 +98,7 @@ void SDLAudioPlayer::play(char *audioPath) {
 
     free(pcm_buffer);
     free(audio_chunk);
+
     onClean();
 }
 
@@ -102,14 +107,39 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
     if (audio_length == 0) {
         return;
     }
+    std::cout << "audio length" << len << std::endl;
 
     len = len > audio_length ? audio_length : len;
 
+
+    for (int i = 0; i < len; ) {
+        //播放右声道，仅保留右声道的数据，左声道数据置为0
+//        if (i % 4 == 0) {
+//            audio_pos[i] = 0;
+//            audio_pos[i+1] = 0;
+//            i += 4;
+//        }
+
+        //播放左声道，仅保留左声道的数据，右声道数据置为0
+        // L L R R L L R R L L R
+        // 0 1 2 3 4 5 6 7 8 9 10
+        if (i == 0) i += 2;
+        if ((i+2) % 4 == 0) {
+            audio_pos[i] = 0;
+            audio_pos[i+1] = 0;
+            i += 4;
+        }
+    }
     //混合播放
+    SDL_MixAudioFormat(stream, audio_pos, audioFormat, len, SDL_MIX_MAXVOLUME);
     //SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
 
     //单独播放audio_pos
-    memcpy(stream, audio_pos, len);
+    //memcpy(stream, audio_pos, len);
+
+
+
+
     audio_pos += len;
     audio_length -= len;
 
@@ -129,7 +159,5 @@ int SDLAudioPlayer::sdl_thread_custom_event(void *){
     // 延时 5 秒
     SDL_Delay(1000);
     // 创建自定义事件并发送到消息队列中去
-    SDL_Event sdlEvent;
-    sdlEvent.type = SDL_USEREVENT;
-    SDL_PushEvent(&sdlEvent);
+    notifyGetAudioFrame();
 }
