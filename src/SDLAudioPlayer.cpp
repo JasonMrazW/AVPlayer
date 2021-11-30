@@ -53,8 +53,10 @@ void SDLAudioPlayer::onClean() {
 }
 
 void SDLAudioPlayer::onEvent(SDL_Event *event) {
+
+
     switch (event->type) {
-        case SDL_USEREVENT:
+        case SDL_USEREVENT: {
             //判断是否数据读完
             if(!audioStream.read(pcm_buffer, pcm_buffer_size)) {
                 //循环播放
@@ -62,15 +64,31 @@ void SDLAudioPlayer::onEvent(SDL_Event *event) {
                 audioStream.seekg(0, std::ios_base::beg);
                 audioStream.read(pcm_buffer, pcm_buffer_size);
             }
+            int len;
+            char *temp;
+            speedupVolumn(len, temp);
 
             //取值
-            audio_chunk = (Uint8 *)pcm_buffer;
-            audio_length = pcm_buffer_size;
+            audio_chunk = (Uint8 *)temp;
+            audio_length = len;
             audio_pos = audio_chunk;
             break;
+        }
         case SDL_QUIT:
             running = false;
             break;
+    }
+}
+
+void SDLAudioPlayer::speedupVolumn(int &len, char *&temp) const {
+    len= pcm_buffer_size / 2;
+    temp= new char[len];
+    // 音频加速，简单通过数据采样，丢弃掉一部分数据实现
+    // 此处未考虑最后一次数据读取的buffer大小是小于pcm_buffer_size的
+    for (int i = 0; i < len; ) {
+        temp[i] = pcm_buffer[i*2];
+        temp[i+1] = pcm_buffer[i*2+1];
+        i+=2;
     }
 }
 

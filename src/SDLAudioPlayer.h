@@ -39,7 +39,7 @@ private:
     SDL_AudioDeviceID audioDeviceId;
 
     static char * pcm_buffer;
-    int pcm_buffer_size = 4096*2;
+    const int pcm_buffer_size = 4096*2;
     static const double d;
     static const double factor;
     std::ifstream audioStream;
@@ -60,6 +60,8 @@ private:
     static void halfToVolumn(int len);
 
     static void playSingleChannel(int len);
+
+    void speedupVolumn(int &len, char *&temp) const;
 };
 
 
