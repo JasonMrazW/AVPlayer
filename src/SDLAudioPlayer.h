@@ -62,6 +62,8 @@ private:
     static void playSingleChannel(int len);
 
     void speedupVolumn(int &len, char *&temp) const;
+
+    unsigned char *_16BitTo8Bit() const;
 };
 
 

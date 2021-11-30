@@ -29,7 +29,7 @@ int SDLAudioPlayer::onInit(char *audioPath) {
     }
 
     //init audio info
-    audioFormat = AUDIO_S16LSB;
+    audioFormat = AUDIO_S8;
 
     audioSpec = SDL_AudioSpec();
     audioSpec.samples = 1024;
@@ -39,7 +39,7 @@ int SDLAudioPlayer::onInit(char *audioPath) {
     audioSpec.silence = 0;
     audioSpec.callback = fillDataCallBack;
 
-    if ((audioDeviceId = SDL_OpenAudioDevice(nullptr,0,&audioSpec,&audioSpec, SDL_AUDIO_ALLOW_ANY_CHANGE)) < 2) {
+    if ((audioDeviceId = SDL_OpenAudioDevice(nullptr,0,&audioSpec,nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE)) < 2) {
         fprintf(stderr, "SDL_Init() failed: %s\n", SDL_GetError());
         return APP_STOP;
     }
@@ -64,13 +64,19 @@ void SDLAudioPlayer::onEvent(SDL_Event *event) {
                 audioStream.seekg(0, std::ios_base::beg);
                 audioStream.read(pcm_buffer, pcm_buffer_size);
             }
-            int len;
-            char *temp;
-            speedupVolumn(len, temp);
+
+            //16 bit pcm转换为 8 bit pcm，丢弃低位数据，具体步骤：
+            //1. signed int16--->signed char
+            //2. signed char --->unsigned char
+            unsigned char *tempBuffer = _16BitTo8Bit();
+
+//            int len;
+//            char *temp;
+//            speedupVolumn(len, temp);
 
             //取值
-            audio_chunk = (Uint8 *)temp;
-            audio_length = len;
+            audio_chunk = (Uint8 *)tempBuffer;
+            audio_length = pcm_buffer_size/2;
             audio_pos = audio_chunk;
             break;
         }
@@ -78,6 +84,29 @@ void SDLAudioPlayer::onEvent(SDL_Event *event) {
             running = false;
             break;
     }
+}
+
+unsigned char *SDLAudioPlayer::_16BitTo8Bit() const {
+    //16 bit pcm转换为 8 bit pcm，丢弃低位数据，具体步骤：
+    //1. signed int16--->signed char
+    //2. signed char --->unsigned char
+    unsigned char *tempBuffer = new unsigned char[pcm_buffer_size / 2];
+
+
+    for (int i = 0; i < pcm_buffer_size;) {
+        //short temp = getShort(pcm_buffer[i+1], pcm_buffer[i]);
+        signed char sample8 = pcm_buffer[i+1];
+
+        unsigned char u_sample8 = sample8 + 128;
+
+        tempBuffer[i/2] = u_sample8;
+        i += 2;
+    }
+
+    //8 bit to 16 bit
+//    unsigned char sample8 = ...;
+//    Uint16 sample16 = (Uint16)(sample8-128) << 8;
+    return tempBuffer;
 }
 
 void SDLAudioPlayer::speedupVolumn(int &len, char *&temp) const {
