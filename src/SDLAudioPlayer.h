@@ -8,6 +8,8 @@
 #include <iostream>
 #include <fstream>
 #include <SDL_events.h>
+#include <cmath>
+
 #define SDL_CUSTOM_EVENT  (SDL_USEREVENT + 1)
 
 class SDLAudioPlayer {
@@ -38,6 +40,8 @@ private:
 
     static char * pcm_buffer;
     int pcm_buffer_size = 4096*2;
+    static const double d;
+    static const double factor;
     std::ifstream audioStream;
 
     int onInit(char *audioPath);
@@ -50,6 +54,8 @@ private:
     static void notifyGetAudioFrame();
 
     static int sdl_thread_custom_event(void *);
+
+    static short getShort(char high, char low);
 };
 
 

@@ -11,6 +11,8 @@ char * SDLAudioPlayer::pcm_buffer;
 unsigned short SDLAudioPlayer::audioFormat;
 
 const Uint32 SDLAudioPlayer::SDL_EVENT_BUFFER_END = 1;
+const double SDLAudioPlayer::d = 12;
+const double SDLAudioPlayer::factor = pow(10, d / 20);
 
 SDLAudioPlayer::SDLAudioPlayer() : running(false){
 
@@ -98,7 +100,6 @@ void SDLAudioPlayer::play(char *audioPath) {
 
     free(pcm_buffer);
     free(audio_chunk);
-
     onClean();
 }
 
@@ -111,8 +112,7 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
 
     len = len > audio_length ? audio_length : len;
 
-
-    for (int i = 0; i < len; ) {
+    for (int i = 0; i < len;) {
         //播放右声道，仅保留右声道的数据，左声道数据置为0
 //        if (i % 4 == 0) {
 //            audio_pos[i] = 0;
@@ -130,6 +130,17 @@ void SDLAudioPlayer::fillDataCallBack(void *userdata, Uint8 * stream, int len) {
             i += 4;
         }
     }
+
+    // 基于左声道数据，进行音量减半的处理
+    for (int i = 0; i < len; ) {
+        short temp = getShort(audio_pos[i+1], audio_pos[i]);
+        temp = temp * factor;
+
+        audio_pos[i] = (char)(temp & 0x00FF);
+        audio_pos[i+1] = (char)(temp >> 8);
+        i += 2;
+    }
+
     //混合播放
     SDL_MixAudioFormat(stream, audio_pos, audioFormat, len, SDL_MIX_MAXVOLUME);
     //SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
@@ -160,4 +171,8 @@ int SDLAudioPlayer::sdl_thread_custom_event(void *){
     SDL_Delay(1000);
     // 创建自定义事件并发送到消息队列中去
     notifyGetAudioFrame();
+}
+
+short SDLAudioPlayer::getShort(char high, char low) {
+    return (short)((high<< 8)|(low & 0xFF));
 }
