@@ -12,15 +12,39 @@ void H264Parser::init() {
 
     std::cout << "file length : " << fileLength/(float)1000/1000 << "MB" << std::endl;
 
-    for (int i = 0; i < 50; ++i) {
-        std::cout << std::hex << (int)fileContent[i] << std::dec << ",";
+    char * temp = fileContent;
+
+    int naluCount = 0;
+    for (int i = 0; i < fileLength; ++i) {
+       StartCodeType type = getNALUType(temp);
+        switch (type) {
+            case Frame_3Byte:
+            case Frame_4Byte:
+                naluCount++;
+                break;
+        }
+        temp = &fileContent[i];
     }
+    std::cout << "nalu count:" << naluCount << std::endl;
 }
+
 
 H264Parser::H264Parser() {
 
 }
 
 H264Parser::~H264Parser() {
+
+}
+
+H264Parser::StartCodeType H264Parser::getNALUType(char *buf) {
+    //先判断是否符合3个字节
+    if ((*buf == 0x00) && (*(buf+1) == 0x00) && (*(buf+2) == 0x01)) {
+        return H264Parser::Frame_3Byte;
+    } else if(*buf == 0x00 && *(buf+1) == 0x00 && *(buf+2) == 0x00 &&  *(buf+3) == 0x01) {
+        return H264Parser::Frame_4Byte;
+    } else {
+        return other;
+    }
 
 }
