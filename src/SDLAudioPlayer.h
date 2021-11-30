@@ -28,7 +28,7 @@ public:
 private:
     bool running = false;
 
-    static Uint8 *audio_track;
+    static Uint8 *audio_chunk;
     static Uint32 audio_length; // audio file length
     static Uint8 *audio_pos; //current position
     static const Uint32 SDL_EVENT_BUFFER_END;

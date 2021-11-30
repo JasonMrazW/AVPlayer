@@ -4,7 +4,7 @@
 
 #include "SDLAudioPlayer.h"
 
-Uint8 * SDLAudioPlayer::audio_track;
+Uint8 * SDLAudioPlayer::audio_chunk;
 Uint32 SDLAudioPlayer::audio_length;
 Uint8 * SDLAudioPlayer::audio_pos;
 char * SDLAudioPlayer::pcm_buffer;
@@ -19,20 +19,6 @@ SDLAudioPlayer::~SDLAudioPlayer() {
 
 }
 
-struct CallbackObject
-        {
-    void onCallback(Uint8 *stream, int len)
-    {
-        // ....
-        std::cout << "cout " << len << std::endl;
-    }
-
-    static void forwardCallback(void *userdata, Uint8 *stream, int len)
-    {
-        static_cast<CallbackObject*>(userdata)->onCallback(stream, len);
-    }
-        };
-
 int SDLAudioPlayer::onInit(char *audioPath) {
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         fprintf(stderr, "SDL_Init() failed: %s\n", SDL_GetError());
@@ -40,9 +26,6 @@ int SDLAudioPlayer::onInit(char *audioPath) {
     }
 
     //init audio info
-    CallbackObject callbackObject;
-
-
     audioSpec = SDL_AudioSpec();
     audioSpec.samples = 1024;
     audioSpec.freq = 44100;
@@ -66,16 +49,18 @@ void SDLAudioPlayer::onClean() {
 void SDLAudioPlayer::onEvent(SDL_Event *event) {
     switch (event->type) {
         case SDL_USEREVENT:
+            //判断是否数据读完
             if(!audioStream.read(pcm_buffer, pcm_buffer_size)) {
                 //循环播放
                 audioStream.clear();
                 audioStream.seekg(0, std::ios_base::beg);
                 audioStream.read(pcm_buffer, pcm_buffer_size);
             }
-            audio_track = (Uint8 *)pcm_buffer;
+
+            //取值
+            audio_chunk = (Uint8 *)pcm_buffer;
             audio_length = pcm_buffer_size;
-            audio_pos = audio_track;
-            std::cout << "read pcm data start" << std::endl;
+            audio_pos = audio_chunk;
             break;
         case SDL_QUIT:
             running = false;
@@ -108,6 +93,7 @@ void SDLAudioPlayer::play(char *audioPath) {
     }
 
     free(pcm_buffer);
+    free(audio_chunk);
     onClean();
 }
 
@@ -138,7 +124,7 @@ void SDLAudioPlayer::notifyGetAudioFrame() {
     SDL_PushEvent(&event);
 }
 
-// 线程运行函数
+//触发读取音频数据
 int SDLAudioPlayer::sdl_thread_custom_event(void *){
     // 延时 5 秒
     SDL_Delay(1000);
