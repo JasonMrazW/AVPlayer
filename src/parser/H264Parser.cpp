@@ -17,7 +17,6 @@ void H264Parser::init() {
     int naluCount = 0;
 
     int *tmp_naluStartPosition = new int[fileLength / 1000];
-    int y = 0;
 
     for (int i = 0; i < fileLength;) {
        StartCodeType type = getNALUType(temp);
