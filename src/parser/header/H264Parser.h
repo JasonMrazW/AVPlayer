@@ -17,9 +17,25 @@ public:
         Frame_3Byte, //3个字节的起始码，接下里是一帧的部分数据
         other
     };
+
+    struct SODB {
+
+    };
+    struct NALU_Header {
+        int forbidden; //禁止位，默认是false
+        int nal_ref_idc; //优先级位
+        int nal_type ; //nal 数据类型
+    };
+    struct RBSP {
+        SODB *sodb;
+    };
+    struct NALU {
+        NALU_Header *header;
+        RBSP *rbsp;
+    };
     void init();
 
-    StartCodeType getNALUType(char * buf);
+    static StartCodeType getNALUType(const char * buf);
 };
 
 
