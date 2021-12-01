@@ -16,8 +16,8 @@ void H264Parser::init() {
 
     int naluCount = 0;
 
-    int *positionArray = new int[fileLength/1000];
-    int currentPosition = 0;
+    int *tmp_naluStartPosition = new int[fileLength / 1000];
+    int y = 0;
 
     for (int i = 0; i < fileLength;) {
        StartCodeType type = getNALUType(temp);
@@ -25,14 +25,12 @@ void H264Parser::init() {
             case Frame_3Byte:
                 //3个字节后是NALU的Header
                 i = i + 3;
-                positionArray[currentPosition++] = i;
-                naluCount++;
+                tmp_naluStartPosition[naluCount++] = i;
                 break;
             case Frame_4Byte:
                 //4个字节后是NALU的Header
                 i = i + 4;
-                positionArray[currentPosition++] = i;
-                naluCount++;
+                tmp_naluStartPosition[naluCount++] = i;
                 break;
             default:
                 i++;
@@ -41,35 +39,35 @@ void H264Parser::init() {
         temp = &fileContent[i];
     }
 
-    std::cout << "currentPosition:" << currentPosition << std::endl;
+    std::cout << "nalu count:" << naluCount << std::endl;
 
-    int *nalStartPoint = new int[currentPosition];
+    int *nalStartPoint = new int[naluCount];
 
     // size = len * sizeof(data type)
-    std::memcpy(nalStartPoint, positionArray, currentPosition * sizeof(int));
+    std::memcpy(nalStartPoint, tmp_naluStartPosition, naluCount * sizeof(int));
 
     // 构造NAL 对象
     int i = 0;
-    NALU *naluArray = new NALU[sizeof (NALU) * naluCount];
+    NALU *nalu_array = new NALU[naluCount];
     NALU *nalu_temp;
     int key_frame_count = 0;
     do {
         //计算NAL的起始位置，两个postion之间的长度
-        int nal_startPosition = nalStartPoint[i];
-        std::cout << "position:" << nal_startPosition << std::endl;
+        int nalu_start_position = nalStartPoint[i];
+        std::cout << "position:" << nalu_start_position << std::endl;
 
         //init NAL_Header
         nalu_temp = new NALU();
         nalu_temp->header = new NALU_Header();
-        naluArray[i] = *nalu_temp;
+        nalu_array[i] = *nalu_temp;
 
         //read first byte
         //---1bit-------2bit-----5bit---
         //---forbidden---ref_id---type---
-        unsigned char first_byte = fileContent[nal_startPosition];
+        unsigned char first_byte = fileContent[nalu_start_position];
         nalu_temp->header->forbidden = (unsigned char )(first_byte & 0x80) >> 7;
         nalu_temp->header->nal_ref_idc = (unsigned char )(first_byte & 0x60) >> 5;
-        nalu_temp->header->nal_type = fileContent[nal_startPosition] & 0x1F;
+        nalu_temp->header->nal_type = fileContent[nalu_start_position] & 0x1F;
 
         if (nalu_temp->header->nal_type == 5) {
             key_frame_count++;
