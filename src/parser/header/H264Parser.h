@@ -36,6 +36,10 @@ public:
     void init();
 
     static StartCodeType getNALUType(const char * buf);
+
+    static void loadHeader(const char *fileContent, NALU *nalu_temp, int nalu_start_position) ;
+
+    char * loadRBSP(int ebsp_length, const char *ebsp_pointer);
 };
 
 
