@@ -17,7 +17,13 @@ set(SOURCE_FILES
         src/parser/YUVImageParser.cpp
         src/parser/header/YUVImageParser.h
         src/parser/header/RGBImageParser.h
-        src/parser/RGBImageParser.cpp src/SDLAudioPlayer.cpp src/SDLAudioPlayer.h src/io/AVFileUtil.cpp src/io/AVFileUtil.h src/parser/H264Parser.cpp src/parser/header/H264Parser.h)
+        src/parser/RGBImageParser.cpp
+        src/SDLAudioPlayer.cpp
+        src/SDLAudioPlayer.h
+        src/io/AVFileUtil.cpp
+        src/io/AVFileUtil.h
+        src/parser/H264Parser.cpp
+        src/parser/header/H264Parser.h)
 
 Message("")
 Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )
