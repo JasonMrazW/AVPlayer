@@ -4,14 +4,14 @@
 
 #include "AVFileUtil.h"
 
-unsigned char *AVFileUtil::readBinaryFile(const char *path, int &fileLength) {
+unsigned char *AVFileUtil::readBinaryFile(const char *path, unsigned int &fileLength) {
     //read file
     std::ifstream ifstream;
 
     ifstream.open(path, std::ios::in | std::ios::binary);
     // read file to binary data
     ifstream.seekg(0,std::ios_base::end);
-    int length = ifstream.tellg();
+    unsigned int length = ifstream.tellg();
     if (length < 0) {
         return NULL;
     }

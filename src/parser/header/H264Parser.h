@@ -37,9 +37,9 @@ public:
 
     static StartCodeType getNALUType(const unsigned char * buf);
 
-    static void loadHeader(const unsigned char *fileContent, NALU *nalu_temp, int nalu_start_position) ;
+    static void loadHeader(const unsigned char *fileContent, NALU *nalu_temp, unsigned int nalu_start_position) ;
 
-    unsigned char * loadRBSP(int ebsp_length, const unsigned char *ebsp_pointer);
+    static unsigned char * loadRBSP(unsigned int ebsp_length, const unsigned char *ebsp_pointer);
 };
 
 
