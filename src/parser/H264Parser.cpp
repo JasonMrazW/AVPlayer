@@ -8,11 +8,11 @@ const char *h264_path = "resources/video/tmp.264";
 
 void H264Parser::init() {
     int fileLength = 0;
-    char *fileContent = AVFileUtil::readBinaryFile(h264_path,fileLength);
+    unsigned char *fileContent = AVFileUtil::readBinaryFile(h264_path,fileLength);
 
     std::cout << "file length : " << fileLength/(float)1000/1000 << "MB" << std::endl;
 
-    char * temp = fileContent;
+    unsigned char * temp = fileContent;
 
     int naluCount = 0;
 
@@ -69,7 +69,7 @@ void H264Parser::init() {
 
         //读第2个Byte到下一个NALU的起始字节，作为整个EBSP
         //指针指向NALU Header后第一个字节
-        char * ebsp_pointer = (fileContent + nalu_start_position + 1);
+        unsigned char * ebsp_pointer = (fileContent + nalu_start_position + 1);
 
         int ebsp_length = 0;
         if (i < naluCount-1) {//非最后一个nalu
@@ -79,10 +79,10 @@ void H264Parser::init() {
         }
 
         //TODO:如何校验rbsp数组内数据的正确性？
-        char *tmp_rbsp = loadRBSP(ebsp_length, ebsp_pointer);
+        unsigned char *tmp_rbsp = loadRBSP(ebsp_length, ebsp_pointer);
 
 
-        std::cout << "rbsp full size:" << strlen(tmp_rbsp) <<  std::endl;
+
         i++;
     }while (i < naluCount);
 
@@ -90,14 +90,14 @@ void H264Parser::init() {
     std::cout << "nalu count:" << naluCount << std::endl;
 }
 
-char * H264Parser::loadRBSP(int ebsp_length, const char *ebsp_pointer) {//检测内部是否存在防竞争数据0x03，如果有就去除这部分数据
+unsigned char * H264Parser::loadRBSP(int ebsp_length, const unsigned char *ebsp_pointer) {//检测内部是否存在防竞争数据0x03，如果有就去除这部分数据
     //添加防竞争数据的情况：
     //0x000000---->0x00000300
     //0x000001---->0x00000301
     //0x000002---->0x00000302
     //0x000003---->0x00000303
     //一次遍历剔除指定元素
-    char *temp_rbsp = new char[ebsp_length];
+    unsigned char *temp_rbsp = new unsigned char[ebsp_length];
 
     int rbsp_index = 0;
     for (int j = 0; j < ebsp_length; ) {
@@ -114,9 +114,9 @@ char * H264Parser::loadRBSP(int ebsp_length, const char *ebsp_pointer) {//检测
     }
 
     //过滤数组大小
-    char *rbsp;
+    unsigned char *rbsp;
     if (rbsp_index < ebsp_length) {
-        rbsp = new char[rbsp_index];
+        rbsp = new unsigned char[rbsp_index];
         memcpy(rbsp, temp_rbsp, rbsp_index * sizeof (char));
     } else {
         rbsp = temp_rbsp;
@@ -131,7 +131,7 @@ char * H264Parser::loadRBSP(int ebsp_length, const char *ebsp_pointer) {//检测
  * @param nalu_temp
  * @param nalu_start_position
  */
-void H264Parser::loadHeader(const char *fileContent, H264Parser::NALU *nalu_temp, int nalu_start_position) {
+void H264Parser::loadHeader(const unsigned char *fileContent, H264Parser::NALU *nalu_temp, int nalu_start_position) {
     //---1bit-------2bit-----5bit---
     //---forbidden---ref_id---type---
     unsigned char first_byte = fileContent[nalu_start_position];
@@ -151,7 +151,7 @@ H264Parser::~H264Parser() {
 
 }
 
-H264Parser::StartCodeType H264Parser::getNALUType(const char *buf) {
+H264Parser::StartCodeType H264Parser::getNALUType(const unsigned char *buf) {
     //先判断是否符合3个字节
     if ((*buf == 0x00) && (*(buf+1) == 0x00) && (*(buf+2) == 0x01)) {
         return H264Parser::Frame_3Byte;

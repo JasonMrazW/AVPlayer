@@ -4,7 +4,7 @@
 
 #include "AVFileUtil.h"
 
-char *AVFileUtil::readBinaryFile(const char *path, int &fileLength) {
+unsigned char *AVFileUtil::readBinaryFile(const char *path, int &fileLength) {
     //read file
     std::ifstream ifstream;
 
@@ -16,8 +16,8 @@ char *AVFileUtil::readBinaryFile(const char *path, int &fileLength) {
         return NULL;
     }
     ifstream.seekg(0, std::ios_base::beg);
-    char* buffer = new char[length];
-    ifstream.read(buffer, length);
+    unsigned char* buffer = new unsigned char[length];
+    ifstream.read(reinterpret_cast<char *>(buffer), length);
     //close file
     ifstream.close();
 

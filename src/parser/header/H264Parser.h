@@ -35,11 +35,11 @@ public:
     };
     void init();
 
-    static StartCodeType getNALUType(const char * buf);
+    static StartCodeType getNALUType(const unsigned char * buf);
 
-    static void loadHeader(const char *fileContent, NALU *nalu_temp, int nalu_start_position) ;
+    static void loadHeader(const unsigned char *fileContent, NALU *nalu_temp, int nalu_start_position) ;
 
-    char * loadRBSP(int ebsp_length, const char *ebsp_pointer);
+    unsigned char * loadRBSP(int ebsp_length, const unsigned char *ebsp_pointer);
 };
 
 

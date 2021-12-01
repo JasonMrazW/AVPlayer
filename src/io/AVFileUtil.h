@@ -9,7 +9,7 @@
 
 class AVFileUtil {
 public:
-    static char* readBinaryFile(const char *path,int &fileLength);
+    static unsigned char* readBinaryFile(const char *path,int &fileLength);
 };
 
 
