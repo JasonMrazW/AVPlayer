@@ -39,7 +39,9 @@ public:
 
     static void loadHeader(const unsigned char *fileContent, NALU *nalu_temp, unsigned int nalu_start_position) ;
 
-    static unsigned char * loadRBSP(unsigned int ebsp_length, const unsigned char *ebsp_pointer);
+    static unsigned char * loadRBSP(unsigned int ebsp_length, const unsigned char *ebsp_pointer, uint32_t &rbsp_length);
+
+    static unsigned char *  loadSODB(unsigned char *tmp_rbsp, uint32_t rbsp_length, uint32_t &sodb_length);
 };
 
 

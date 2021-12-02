@@ -5,6 +5,7 @@
 #include "header/H264Parser.h"
 #include "../io/AVFileUtil.h"
 const char *h264_path = "resources/video/tmp.264";
+using namespace std;
 
 void H264Parser::init() {
     unsigned int fileLength = 0;
@@ -17,6 +18,7 @@ void H264Parser::init() {
     int nalu_count = 0;
 
     int *temp_naluStartPosition = new int[fileLength / 1000];
+    uint32_t *temp_naluLengthPosition = new uint32_t[fileLength / 1000];
 
     StartCodeType type;
     for (int i = 0; i < fileLength;) {
@@ -25,11 +27,17 @@ void H264Parser::init() {
             case Frame_3Byte:
                 //3个字节后是NALU的Header
                 i = i + 3;
+                if (nalu_count >= 1) {
+                    temp_naluLengthPosition[nalu_count-1] = i-3-temp_naluStartPosition[nalu_count-1];
+                }
                 temp_naluStartPosition[nalu_count++] = i;
                 break;
             case Frame_4Byte:
                 //4个字节后是NALU的Header
                 i = i + 4;
+                if (nalu_count >= 1) {
+                    temp_naluLengthPosition[nalu_count-1] = i-4-temp_naluStartPosition[nalu_count-1];
+                }
                 temp_naluStartPosition[nalu_count++] = i;
                 break;
             default:
@@ -38,6 +46,7 @@ void H264Parser::init() {
         }
         temp = &fileContent[i];
     }
+    temp_naluLengthPosition[nalu_count-1] = fileLength-temp_naluStartPosition[nalu_count-1];
 
     std::cout << "nalu count:" << nalu_count << std::endl;
 
@@ -48,7 +57,7 @@ void H264Parser::init() {
 
     // 构造NALU Struct
     int i = 0;
-    NALU *nalu_array = new NALU[nalu_count];
+    NALU *nalu_array = new NALU[nalu_count]; // delete[] nalu_array
     NALU *nalu_temp;
     unsigned int key_frame_count = 0;
     do {
@@ -57,7 +66,7 @@ void H264Parser::init() {
         //std::cout << "position:" << nalu_start_position << std::endl;
 
         //init NAL_Header
-        nalu_temp = new NALU();
+        nalu_temp = new NALU(); // delete nalu_tmp;
         nalu_temp->header = new NALU_Header();
         nalu_array[i] = *nalu_temp;
 
@@ -72,26 +81,72 @@ void H264Parser::init() {
         //指针指向NALU Header后第一个字节
         unsigned char * ebsp_pointer = (fileContent + nalu_start_position + 1);
 
-        unsigned int ebsp_length = 0;
-        if (i < nalu_count - 1) {//非最后一个nalu
-            ebsp_length = nalStartPoint[i + 1] - nalu_start_position - 1;
-        } else {//最后一个nalu
-            ebsp_length = fileLength - nalu_start_position -1;
-        }
-
-        //TODO:如何校验rbsp数组内数据的正确性？
-        unsigned char *tmp_rbsp = loadRBSP(ebsp_length, ebsp_pointer);
-
+        unsigned int ebsp_length = temp_naluLengthPosition[i] - 1;
         
+        //printf("ebsp'last byte：%02hhx", ebsp_pointer[ebsp_length-1]);
+        //printf("\r\n");
+        //TODO:如何校验rbsp数组内数据的正确性？
+        uint32_t rbsp_length = 0;
+        unsigned char *tmp_rbsp = loadRBSP(ebsp_length, ebsp_pointer, rbsp_length);
+        //std::cout << "nalu type:" << nalu_temp->header->nal_type << " ";
+        //std::cout << "rbsp length:" << rbsp_length << std::endl;
+
+        uint32_t  sodb_length = 0;
+        unsigned char *tmp_sodb = loadSODB(tmp_rbsp, rbsp_length, sodb_length);
+        //std::cout << "sodb length:" << sodb_length << std::endl;
 
         i++;
     }while (i < nalu_count);
 
     std::cout << "key frame count:" << key_frame_count << std::endl;
-    std::cout << "nalu count:" << nalu_count << std::endl;
+
 }
 
-unsigned char * H264Parser::loadRBSP(unsigned int ebsp_length, const unsigned char *ebsp_pointer) {//检测内部是否存在防竞争数据0x03，如果有就去除这部分数据
+unsigned char *  H264Parser::loadSODB(unsigned char *tmp_rbsp, uint32_t rbsp_length, uint32_t &sodb_length) {
+    //从尾部向前遍历
+    //可能存在补齐，也可能不存在补齐的逻辑
+    uint8_t tmp;
+    uint8_t factor;
+    uint32_t i;
+    for (i = rbsp_length-1; i >= 0; --i) {
+        tmp = tmp_rbsp[i];
+
+        if ((tmp) != 0) {
+            //找到具体是哪位非0
+            factor = 0x01;
+            while ((tmp & factor) == 0 && tmp >= 0) {
+                tmp = tmp >> 1;
+            }
+
+            tmp = tmp >> 1;
+            break;
+        } else {
+            //全0，继续向前寻找
+            continue;
+        }
+    }
+    i = i + 1;
+
+    unsigned char * sodb;
+    if (tmp >= 0) { //找到了，对应的位置是factor
+        //i-1前的数据保留，同时第i个字节的tmp即为处理后的结果
+        sodb = new unsigned char [i];
+        memcpy(sodb, tmp_rbsp, i-1);
+        //对tmp做处理，仅保留factor前的数据
+        sodb[i] = tmp;
+        sodb_length = i;
+        if (tmp > 0) {
+            std::cout << "tmp：" << (int)tmp << endl;
+        }
+    } else {
+        sodb = tmp_rbsp;
+        sodb_length = i;
+    }
+
+    return sodb;
+}
+
+unsigned char * H264Parser::loadRBSP(unsigned int ebsp_length, const unsigned char *ebsp_pointer, uint32_t &rbsp_length) {//检测内部是否存在防竞争数据0x03，如果有就去除这部分数据
     //添加防竞争数据的情况：
     //0x000000---->0x00000300
     //0x000001---->0x00000301
@@ -100,7 +155,7 @@ unsigned char * H264Parser::loadRBSP(unsigned int ebsp_length, const unsigned ch
     //一次遍历剔除指定元素
     unsigned char *temp_rbsp = new unsigned char[ebsp_length];
 
-    int rbsp_index = 0;
+    uint32_t rbsp_index = 0;
     for (int j = 0; j < ebsp_length; ) {
         //检测第3个字节是否是0x03即可
         if (ebsp_pointer[j] == 0 && ebsp_pointer[j + 1] == 0 && ebsp_pointer[j + 2] == 0x03) {
@@ -118,10 +173,12 @@ unsigned char * H264Parser::loadRBSP(unsigned int ebsp_length, const unsigned ch
     unsigned char *rbsp;
     if (rbsp_index < ebsp_length) {
         rbsp = new unsigned char[rbsp_index];
-        memcpy(rbsp, temp_rbsp, rbsp_index * sizeof (char));
+        memcpy(rbsp, temp_rbsp, rbsp_index);
     } else {
         rbsp = temp_rbsp;
     }
+
+    rbsp_length = rbsp_index;
 
     return rbsp;
 }
