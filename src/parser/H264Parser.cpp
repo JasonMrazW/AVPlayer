@@ -82,7 +82,7 @@ void H264Parser::init() {
         unsigned char * ebsp_pointer = (fileContent + nalu_start_position + 1);
 
         unsigned int ebsp_length = temp_naluLengthPosition[i] - 1;
-        
+
         //printf("ebsp'last byte：%02hhx", ebsp_pointer[ebsp_length-1]);
         //printf("\r\n");
         //TODO:如何校验rbsp数组内数据的正确性？
@@ -107,40 +107,32 @@ unsigned char *  H264Parser::loadSODB(unsigned char *tmp_rbsp, uint32_t rbsp_len
     //可能存在补齐，也可能不存在补齐的逻辑
     uint8_t tmp;
     uint8_t factor;
-    uint32_t i;
-    for (i = rbsp_length-1; i >= 0; --i) {
-        tmp = tmp_rbsp[i];
+    tmp = tmp_rbsp[rbsp_length-1];
 
-        if ((tmp) != 0) {
-            //找到具体是哪位非0
-            factor = 0x01;
-            while ((tmp & factor) == 0 && tmp >= 0) {
-                tmp = tmp >> 1;
-            }
-
+    if ((tmp) != 0) {
+        //找到具体是哪位非0
+        factor = 0x01;
+        while ((tmp & factor) == 0 && tmp >= 0) {
             tmp = tmp >> 1;
-            break;
-        } else {
-            //全0，继续向前寻找
-            continue;
         }
+
+        tmp = tmp >> 1;
     }
-    i = i + 1;
 
     unsigned char * sodb;
     if (tmp >= 0) { //找到了，对应的位置是factor
         //i-1前的数据保留，同时第i个字节的tmp即为处理后的结果
-        sodb = new unsigned char [i];
-        memcpy(sodb, tmp_rbsp, i-1);
+        sodb = new unsigned char [rbsp_length];
+        memcpy(sodb, tmp_rbsp, rbsp_length-1);
         //对tmp做处理，仅保留factor前的数据
-        sodb[i] = tmp;
-        sodb_length = i;
+        sodb[rbsp_length-1] = tmp;
+        sodb_length = rbsp_length;
         if (tmp > 0) {
             std::cout << "tmp：" << (int)tmp << endl;
         }
     } else {
         sodb = tmp_rbsp;
-        sodb_length = i;
+        sodb_length = rbsp_length;
     }
 
     return sodb;
