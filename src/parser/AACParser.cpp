@@ -53,20 +53,20 @@ void AACParser::init() {
     //重新分配合适的内存
     uint32_t *start_position_array = new uint32_t[frame_count];
     memcpy(start_position_array, temp_position_array, frame_count);
-    //delete[] temp_position_array;
+    delete[] temp_position_array;
 
     uint16_t index = 0;
-    ADTS_Frame *frame_array = new ADTS_Frame[frame_count];
-    ADTS_Frame *temp_frame;
+    ADTSFrame *frame_array = new ADTSFrame[frame_count];
+    ADTSFrame *temp_frame;
     cout << "adts_frame count :" << frame_count << endl;
     do {
-        temp_frame = new ADTS_Frame();
+        temp_frame = new ADTSFrame();
         temp_frame->fixed_header = new FixedHeader();
         temp_frame->variable_header = new VariableHeader();
 
         frame_array[index] = *temp_frame;
 
-        uint8_t *temp_frame_content = &audio_content[temp_position_array[index]];
+        uint8_t *temp_frame_content = &audio_content[start_position_array[index]];
 
 
         //the second char
@@ -103,7 +103,7 @@ void AACParser::init() {
         temp_frame->variable_header->number_of_raw_blocks_in_frame = temp_frame_content[6] & 0x03;
 
         //print value
-        cout << (int)temp_frame->variable_header->buffer_fullness << endl;
+        cout << (int)temp_frame->fixed_header->profile << endl;
 
         index++;
     } while (index < frame_count);
