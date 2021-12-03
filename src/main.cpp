@@ -4,31 +4,37 @@
 #include "parser/header/RGBImageParser.h"
 #include "SDLAudioPlayer.h"
 #include "parser/header/H264Parser.h"
+#include "parser/header/AACParser.h"
+
+using namespace std;
 
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
-    std::cout << sizeof(unsigned int) << std::endl;
+
 //    CApp app;
 //    IImageParser *parser = new YUVImageParser;
 //    parser->loadFile();
 //    return app.OnExecute(parser);
+
 //    SDLAudioPlayer audioPlayer;
 //    audioPlayer.play("resources/out.pcm");
-    H264Parser parser;
-    parser.init();
 
-    //1010
-    uint8_t tmp = 0xa;
-    uint8_t factor;
-    //找到具体是哪位非0
-    factor = 0x01;
-    while ((tmp & factor) == 0 && tmp >= 0) {
-        std::cout << (int)tmp << ",";
-        tmp = tmp >> 1;
-    }
-    std::cout << "------" << (int)tmp << ",";
-    tmp = tmp >> 1;
-    std::cout << "------" << (int)tmp << ",";
+//    H264Parser parser;
+//    parser.init();
+
+    AACParser aacParser;
+    aacParser.init();
+
+    //80 0a 1f
+    //1000 0000 0000 1010 0001 1111
+    //00 0000 1010 000
+
+    uint16_t frame_size = 0;
+    frame_size |= (0x80 & 0x3) << 11;
+    frame_size |= 0x0a << 3;
+    frame_size |= (0x1F & 0xE0) >> 5;
+
+    //cout << frame_size << endl;
 
     return 0;
 }

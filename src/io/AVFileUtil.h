@@ -7,9 +7,26 @@
 #include <iostream>
 #include <fstream>
 
+#define revertLittleToBig(A) ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))
+
 class AVFileUtil {
 public:
     static unsigned char* readBinaryFile(const char *path, unsigned int &fileLength);
+
+    static uint16_t * readBinaryFileAsUint16(const char *path, unsigned int &fileLength);
+
+    /**
+     * 判断是否小端
+     * @return
+     */
+    static bool isLittleEndien() {
+        int i = 1;
+        char *p = (char *)&i;
+        if (*p == 1) {
+            return true;
+        }
+        return false;
+    };
 };
 
 

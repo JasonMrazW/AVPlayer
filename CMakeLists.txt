@@ -23,7 +23,7 @@ set(SOURCE_FILES
         src/io/AVFileUtil.cpp
         src/io/AVFileUtil.h
         src/parser/H264Parser.cpp
-        src/parser/header/H264Parser.h src/parser/header/AACParser.cpp src/parser/AACParser.h)
+        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h)
 
 Message("")
 Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )
