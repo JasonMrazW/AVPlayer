@@ -11,4 +11,6 @@ audio &amp; video's play project
 
 ![h264_nalu_structure](resources/docs/H264_Structure.jpg)
 
+## AAC-ADTS Structure
 
+![aac_adts_structure](resources/docs/AAC_ADTS.jpg)
