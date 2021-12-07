@@ -48,6 +48,8 @@ FLVTag *FLVParaser::parseFLVTag(uint32_t file_length, uint8_t *tag_content) {
     uint16_t audio_count = 0;
     uint16_t video_count = 0;
     uint16_t script_count = 0;
+    uint32_t pre_tag_size = 0;
+    uint32_t temp_index = 0;
 
     for (uint32_t i = 0; i < file_length; ) {
         temp_tag = FLVTag();
@@ -77,7 +79,8 @@ FLVTag *FLVParaser::parseFLVTag(uint32_t file_length, uint8_t *tag_content) {
                 break;
         }
         //下一个tag
-        i += 11 + 4 + temp_tag.data_size;
+        //下一个tag位置 = 上个tag的位置 + 上个tag的长度 + 4
+        i += temp_tag.data_size + 11 + 4;
     }
 
     cout << "audio tag count: " << audio_count << endl;
