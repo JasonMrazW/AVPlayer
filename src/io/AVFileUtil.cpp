@@ -4,17 +4,18 @@
 
 #include "AVFileUtil.h"
 
-unsigned char *AVFileUtil::readBinaryFile(const char *path, unsigned int &fileLength) {
+uint8_t *AVFileUtil::readBinaryFile(const char *path, uint32_t &fileLength) {
     //read file
     std::ifstream ifstream;
 
     ifstream.open(path, std::ios::in | std::ios::binary);
     // read file to binary data
     ifstream.seekg(0,std::ios_base::end);
-    unsigned int length = ifstream.tellg();
+    uint32_t length = ifstream.tellg();
     if (length < 0) {
         return NULL;
     }
+
     ifstream.seekg(0, std::ios_base::beg);
     unsigned char* buffer = new unsigned char[length];
     ifstream.read(reinterpret_cast<char *>(buffer), length);

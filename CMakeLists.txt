@@ -10,20 +10,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMAKE")
 set(SOURCE_FILES
         src/main.cpp
-        src/SDLImagePlayer.hpp
-        src/SDLImagePlayer.cpp
+        src/player/SDLImagePlayer.hpp
+        src/player/SDLImagePlayer.cpp
         src/parser/header/YUVFileData.h
         src/parser/header/IImageParser.h
         src/parser/YUVImageParser.cpp
         src/parser/header/YUVImageParser.h
         src/parser/header/RGBImageParser.h
         src/parser/RGBImageParser.cpp
-        src/SDLAudioPlayer.cpp
-        src/SDLAudioPlayer.h
+        src/player/SDLAudioPlayer.cpp
+        src/player/SDLAudioPlayer.h
         src/io/AVFileUtil.cpp
         src/io/AVFileUtil.h
         src/parser/H264Parser.cpp
-        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h)
+        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h)
 
 Message("")
 Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

@@ -8,8 +8,8 @@ const char *h264_path = "resources/video/tmp.264";
 using namespace std;
 
 void H264Parser::init() {
-    unsigned int fileLength = 0;
-    unsigned char *fileContent = AVFileUtil::readBinaryFile(h264_path, fileLength);
+    uint32_t fileLength = 0;
+    uint8_t *fileContent = AVFileUtil::readBinaryFile(h264_path, fileLength);
 
     std::cout << "file length : " << fileLength/(float)1000/1000 << "MB" << std::endl;
 

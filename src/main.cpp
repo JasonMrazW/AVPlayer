@@ -1,10 +1,11 @@
 #include <iostream>
-#include "SDLImagePlayer.hpp"
+#include "player/SDLImagePlayer.hpp"
 #include "parser/header/YUVImageParser.h"
 #include "parser/header/RGBImageParser.h"
-#include "SDLAudioPlayer.h"
+#include "player/SDLAudioPlayer.h"
 #include "parser/header/H264Parser.h"
 #include "parser/header/AACParser.h"
+#include "parser/header/FLVParaser.h"
 
 using namespace std;
 
@@ -22,13 +23,10 @@ int main() {
 //    H264Parser parser;
 //    parser.init();
 
-    AACParser aacParser;
-    aacParser.init();
+//    AACParser aacParser;
+//    aacParser.init();
 
-//    int i = 1;
-//    char *p = (char *)&i;
-//    cout << hex << &i << endl;
-//    cout << hex << *p << endl;
-
+    //FLVParaser flv_parser;
+    FLVParaser::init();
     return 0;
 }

@@ -11,9 +11,9 @@
 
 class AVFileUtil {
 public:
-    static unsigned char* readBinaryFile(const char *path, unsigned int &fileLength);
+    static uint8_t * readBinaryFile(const char *path, uint32_t &fileLength);
 
-    static uint16_t * readBinaryFileAsUint16(const char *path, unsigned int &fileLength);
+    static uint16_t * readBinaryFileAsUint16(const char *path, uint32_t &fileLength);
 
     /**
      * 判断是否小端
