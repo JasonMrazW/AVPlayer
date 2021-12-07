@@ -9,6 +9,8 @@
 class BinaryUtil {
 public:
     static uint16_t getUint16(uint8_t high, uint8_t low);
+
+    static uint32_t getUint32(uint8_t *content, uint8_t size);
 };
 
 
