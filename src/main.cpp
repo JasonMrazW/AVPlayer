@@ -6,7 +6,6 @@
 #include "parser/header/H264Parser.h"
 #include "parser/header/AACParser.h"
 #include "parser/header/FLVParaser.h"
-#include "util/BinaryUtil.h"
 
 using namespace std;
 
@@ -41,6 +40,16 @@ int main() {
 //
 //    uint32_t  result = BinaryUtil::getUint32(temp, 3);
 //    cout << result << endl;
+    //4094 0000 0000 0000
+    //0100 0000 1001 0100 0000 0000 0000 ...
+//    uint8_t *temp = new uint8_t [8];
+//    temp[0] = 0x40;
+//    temp[1] = 0x94;
+//
+//    double result = BinaryUtil::getDouble(temp,8);
+//    cout << "result:" << result << endl;
 
     return 0;
 }
+
+
