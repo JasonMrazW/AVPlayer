@@ -37,12 +37,12 @@ void FLVParaser::init() {
     uint16_t index = 0;
     FLVTag script_tag;
 
-    while (index < flv_tag_count) {
-        if (tag_array[index].tag_type == SCRIPT) {
-            script_tag = tag_array[index];
-            break;
-        }
-        index++;
+    //script tag常规情况下肯定是第一个tag
+    if (tag_array[0].tag_type == SCRIPT) {
+        script_tag = tag_array[index];
+    } else {
+        cout << "parse error : script tag is not the first tag!!!" << endl;
+        return;
     }
 
     //解析onMetaData
@@ -220,6 +220,13 @@ uint32_t FLVParaser::readScriptDataObject(uint8_t *script_data, ScriptDataObject
     return i;
 }
 
+uint32_t FLVParaser::readScriptString(uint8_t *script_data, ScriptString &scriptString) {
+    scriptString.string_length = BinaryUtil::getUint16(script_data[0], script_data[1]);
+    scriptString.string_data = BinaryUtil::getUint8(script_data+2, scriptString.string_length);
+
+    return 2 + scriptString.string_length;
+}
+
 
 /**
  * 解析flv tag数据，返回对应的tag数组
@@ -306,11 +313,4 @@ void FLVParaser::parserHeader(const uint8_t *file_content) {
     cout << "header_size: " << flv_header->header_size << endl;
 }
 
-uint32_t FLVParaser::readScriptString(uint8_t *script_data, ScriptString &scriptString) {
-    scriptString.string_length = BinaryUtil::getUint16(script_data[0], script_data[1]);
-    scriptString.string_data = BinaryUtil::getUint8(script_data+2, scriptString.string_length);
-    //cout << "string value：" << scriptString.string_data << endl;
-    //printf("%s \r\n", scriptString.string_data);
 
-    return 2 + scriptString.string_length;
-}
