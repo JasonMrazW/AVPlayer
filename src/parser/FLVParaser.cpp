@@ -336,13 +336,13 @@ void FLVParaser::parseAudioTag(uint8_t *audio_data) {
         if (audio_tag.aac_packet_type == AAC_RAW) {
             audio_tag.audio_data = audio_data + 2;
         } else {
-
+            audio_tag.audio_data = audio_data + 1;
         }
     }
 
     cout << "audio format:" << getAudioFormatDescription(audio_tag.format) << endl;
-    cout << "audio rate:" << getSampleRate(audio_tag.rate) << endl;
-    cout << "audio size:" << (audio_tag.size == 0 ? "8 bits" : " 16 bits") << endl;
+    cout << "audio sample rate:" << getSampleRate(audio_tag.rate) << endl;
+    cout << "audio bit size:" << (audio_tag.size == 0 ? "8 bits" : " 16 bits") << endl;
     cout << "audio channel_type:" << (audio_tag.channel_type == 0 ? "mono" : "stereo" )<< endl;
     cout << "audio aac_packet_type:" << (unsigned )audio_tag.aac_packet_type << endl;
 }
