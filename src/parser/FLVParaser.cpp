@@ -46,7 +46,7 @@ void FLVParaser::init() {
     }
 
     //解析onMetaData
-    //stringLength----stringdata----type----value
+    //stringLength----stringdata----channel_type----value
     //16bits
     //parse first name：
     cout << "script data info:" << endl;
@@ -57,14 +57,23 @@ void FLVParaser::init() {
     uint32_t name_length = parseScriptData(script_tag.data, &script_tag_body->name);
     uint8_t *temp_name = static_cast<ScriptString*>(script_tag_body->name.script_data_value)->string_data;
     cout << "script header key:" << &temp_name [ '\0'] << endl;
-    parseScriptData(script_tag.data + name_length, &script_tag_body->value);
+    uint32_t value_length = parseScriptData(script_tag.data + name_length, &script_tag_body->value);
+
+    //解析接下来的tag
+    FLVTag temp_tag;
+    for (int i = 1; i < flv_tag_count - 1; ++i) {
+        temp_tag = tag_array[i];
+        if (temp_tag.tag_type == AUDIO) {
+            parseAudioTag(temp_tag.data);
+        }
+    }
 }
 
 uint32_t FLVParaser::parseScriptData(uint8_t *script_data_p, ScriptDataValue *data_value) {
     //1个字节的type
     data_value->type = script_data_p[0];
     //根据type来确定value部分的长度
-    //cout << "type:" << unsigned (data_value->type) << endl;
+    //cout << "channel_type:" << unsigned (data_value->channel_type) << endl;
     uint32_t script_data_length = 1;
     uint8_t * script_data = script_data_p+1;
     //根据类型解析接下来的数据
@@ -268,7 +277,7 @@ FLVTag *FLVParaser::parseFLVTag(uint32_t file_length, uint8_t *tag_content, uint
                 script_count++;
                 break;
             default:
-                cout << "unknown flv tag type: " << unsigned (temp_tag->tag_type) << endl;
+                cout << "unknown flv tag channel_type: " << unsigned (temp_tag->tag_type) << endl;
                 break;
         }
 
@@ -312,5 +321,32 @@ void FLVParaser::parserHeader(const uint8_t *file_content) {
     cout << "hasVideo: " << flv_header->hasVideo << endl;
     cout << "header_size: " << flv_header->header_size << endl;
 }
+
+void FLVParaser::parseAudioTag(uint8_t *audio_data) {
+    //读取 audio tag的header
+    AudioTag audio_tag;
+    uint8_t temp_char = audio_data[0];
+    audio_tag.format = (temp_char & 0xF0) >> 4;
+    audio_tag.rate = (temp_char & 0x0C) >> 2;
+    audio_tag.size =  (temp_char & 0x02) >> 1;
+    audio_tag.channel_type = temp_char & 0x01;
+
+    if (audio_tag.format == 10) {
+        audio_tag.aac_packet_type = audio_data[1];
+        if (audio_tag.aac_packet_type == AAC_RAW) {
+            audio_tag.audio_data = audio_data + 2;
+        } else {
+
+        }
+    }
+
+    cout << "audio format:" << getAudioFormatDescription(audio_tag.format) << endl;
+    cout << "audio rate:" << getSampleRate(audio_tag.rate) << endl;
+    cout << "audio size:" << (audio_tag.size == 0 ? "8 bits" : " 16 bits") << endl;
+    cout << "audio channel_type:" << (audio_tag.channel_type == 0 ? "mono" : "stereo" )<< endl;
+    cout << "audio aac_packet_type:" << (unsigned )audio_tag.aac_packet_type << endl;
+}
+
+
 
 

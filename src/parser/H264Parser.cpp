@@ -52,7 +52,7 @@ void H264Parser::init() {
 
     unsigned int *nalStartPoint = new unsigned int[nalu_count];
 
-    // size = len * sizeof(data type)
+    // size = len * sizeof(data channel_type)
     std::memcpy(nalStartPoint, temp_naluStartPosition, nalu_count * sizeof(unsigned int));
 
     // 构造NALU Struct
@@ -88,7 +88,7 @@ void H264Parser::init() {
         //TODO:如何校验rbsp数组内数据的正确性？
         uint32_t rbsp_length = 0;
         unsigned char *tmp_rbsp = loadRBSP(ebsp_length, ebsp_pointer, rbsp_length);
-        //std::cout << "nalu type:" << nalu_temp->fixed_header->nal_type << " ";
+        //std::cout << "nalu channel_type:" << nalu_temp->fixed_header->nal_type << " ";
         //std::cout << "rbsp length:" << rbsp_length << std::endl;
 
         uint32_t  sodb_length = 0;
@@ -183,7 +183,7 @@ unsigned char * H264Parser::loadRBSP(unsigned int ebsp_length, const unsigned ch
  */
 void H264Parser::loadHeader(const unsigned char *fileContent, H264Parser::NALU *nalu_temp, unsigned int nalu_start_position) {
     //---1bit-------2bit-----5bit---
-    //---forbidden---ref_id---type---
+    //---forbidden---ref_id---channel_type---
     unsigned char first_byte = fileContent[nalu_start_position];
     nalu_temp->header->forbidden = (unsigned char )(first_byte & 0x80) >> 7;
     nalu_temp->header->nal_ref_idc = (unsigned char )(first_byte & 0x60) >> 5;
