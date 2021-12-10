@@ -2,8 +2,8 @@
 // Created by bo on 2021/12/8.
 //
 
-#ifndef AVPLAYER_FLVSTRUCTDEFINE_H
-#define AVPLAYER_FLVSTRUCTDEFINE_H
+#ifndef AVPLAYER_FLVAMFINFO_H
+#define AVPLAYER_FLVAMFINFO_H
 static const uint32_t FLV_SCRIPT_TAG_END = 0x000009;//24 bits 结尾
 
 //----24bit----1bit----5bit----1bit----1bit----1bit----32bit----
@@ -95,4 +95,4 @@ typedef struct Script_Tag_Body {
     Script_Data_Value value;
 } ScriptTagBody;
 
-#endif //AVPLAYER_FLVSTRUCTDEFINE_H
+#endif //AVPLAYER_FLVAMFINFO_H

@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
-#include "FLVStructDefine.h"
+#include "FLVAMFInfo.h"
 
 
 class FLVParaser {
