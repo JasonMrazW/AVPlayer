@@ -20,6 +20,20 @@ enum AVCFrameType {
 };
 
 typedef struct AVC_Decoder_Configuration_Record {
+    uint8_t configuration_version; // 8 bit
+    uint8_t profile_indication;// 8 bit
+    uint8_t profile_compatibility;// 8 bit
+    uint8_t level_indication;// 8 bit
+    //6bit reserved
+    uint8_t length_size_minus_one; // 2bit
+    //3 bit reserved
+    //一般而言，只会有一个sps和pps
+    uint8_t sps_num; // 5 bit
+    uint16_t sps_length; // 16 bit
+    uint8_t *sps;
+    uint8_t pps_num; // 8 bit
+    uint16_t pps_length; // 16 bit
+    uint8_t *pps;
 
 } AVCDecoderConfigurationRecord;
 

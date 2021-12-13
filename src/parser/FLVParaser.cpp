@@ -360,20 +360,61 @@ void FLVParaser::parseVideoTag(uint8_t *video_data) {
     video_tag.frame_type = (temp_char &0xF0) >> 4;
     video_tag.codec_id = temp_char &0xF;
 
+    uint8_t *temp_data = video_data + 1;
     if (video_tag.codec_id == 7) { //h264
-        video_tag.avc_packet_type = video_data[1];
-        video_tag.composition_time = BinaryUtil::getUint32(video_data, 3);
+        video_tag.avc_packet_type = *temp_data;
+        temp_data++;
+
+        video_tag.composition_time = BinaryUtil::getUint32(temp_data, 3);
+        temp_data += 3;
 
         if (video_tag.avc_packet_type == AVC_SEQUENCE_HEADER) {
-            //todo: parse avc header
+            AVCDecoderConfigurationRecord *record = &video_tag.record;
+            record->configuration_version = *temp_data++;
+            record->profile_indication = *temp_data++;
+            record->profile_compatibility = *temp_data++;
+            record->level_indication = *temp_data++;
+            record->length_size_minus_one = *temp_data & 0x2;
+            temp_data++;
+
+            //get sps num
+            record->sps_num = *temp_data & 0x1F;
+            temp_data++;
+
+            for (int i = 0; i < record->sps_num; ++i) {
+                record->sps_length = BinaryUtil::getUint16(*temp_data, *(temp_data+1));
+                record->sps = BinaryUtil::getUint8(temp_data+2, record->sps_length);
+                temp_data += 2 + record->sps_length;
+            }
+
+            //get sps num
+            record->pps_num = *temp_data;
+            temp_data++;
+
+            for (int i = 0; i < record->pps_num; ++i) {
+                record->pps_length = BinaryUtil::getUint16(*temp_data, *(temp_data+1));
+                record->pps = BinaryUtil::getUint8(temp_data+2, record->pps_length);
+                temp_data += 2 + record->pps_length;
+            }
+
+            cout << "avc configuration_version:" << (unsigned )video_tag.record.configuration_version << endl;
+            cout << "avc profile_indication:" << (unsigned )video_tag.record.profile_indication << endl;
+            cout << "avc profile_compatibility:" << (unsigned )video_tag.record.profile_compatibility << endl;
+            cout << "avc level_indication:" << (unsigned )video_tag.record.level_indication << endl;
+            cout << "avc length_size_minus_one:" << (unsigned )video_tag.record.length_size_minus_one << endl;
+            cout << "avc sps_num:" << (unsigned)video_tag.record.sps_num << endl;
+            cout << "avc sps_length:" << (unsigned )video_tag.record.sps_length << endl;
+            cout << "avc pps_num:" << (unsigned )video_tag.record.pps_num << endl;
+            cout << "avc pps_length:" << (unsigned )video_tag.record.pps_length << endl;
         } else if (video_tag.avc_packet_type == AVC_NALU) {
-            video_tag.avc_data = video_data+4;
+            video_tag.avc_data = temp_data;
         }
     }
 
-    cout << "video frame type:" << getAVCFrameTypeDescription(video_tag.frame_type) << endl;
-    cout << "video codec id:" << (unsigned )video_tag.codec_id << endl;
-    cout << "avc packet type:" << (unsigned )video_tag.avc_packet_type << endl;
+//    cout << "video frame type:" << getAVCFrameTypeDescription(video_tag.frame_type) << endl;
+//    cout << "video codec id:" << (unsigned )video_tag.codec_id << endl;
+//    cout << "avc packet type:" << (unsigned )video_tag.avc_packet_type << endl;
+
 }
 
 
