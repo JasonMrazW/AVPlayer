@@ -9,6 +9,7 @@
 #include <sstream>
 #include "FLVAMFInfo.h"
 #include "FLVAudioTag.h"
+#include "FLVVideoTag.h"
 
 //----24bit----1bit----5bit----1bit----1bit----1bit----32bit----
 //----FLV------1-------00000---0 or 1--0-------0 or 1--0x0009---
@@ -55,6 +56,8 @@ public:
     static uint32_t readScriptDataObject(uint8_t *script_data, ScriptDataObject &dataObject);
 
     static void parseAudioTag(uint8_t *audio_data);
+
+    static void parseVideoTag(uint8_t *video_data);
 };
 
 

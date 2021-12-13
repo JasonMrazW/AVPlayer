@@ -63,8 +63,14 @@ void FLVParaser::init() {
     FLVTag temp_tag;
     for (int i = 1; i < flv_tag_count - 1; ++i) {
         temp_tag = tag_array[i];
-        if (temp_tag.tag_type == AUDIO) {
-            parseAudioTag(temp_tag.data);
+
+        switch (temp_tag.tag_type) {
+            case AUDIO:
+                //parseAudioTag(temp_tag.data);
+                break;
+            case VIDEO:
+                parseVideoTag(temp_tag.data);
+                break;
         }
     }
 }
@@ -347,6 +353,28 @@ void FLVParaser::parseAudioTag(uint8_t *audio_data) {
     cout << "audio aac_packet_type:" << (unsigned )audio_tag.aac_packet_type << endl;
 }
 
+void FLVParaser::parseVideoTag(uint8_t *video_data) {
+    //读取Video Tag的Header
+    VideoTag video_tag;
+    uint8_t temp_char = video_data[0];
+    video_tag.frame_type = (temp_char &0xF0) >> 4;
+    video_tag.codec_id = temp_char &0xF;
+
+    if (video_tag.codec_id == 7) { //h264
+        video_tag.avc_packet_type = video_data[1];
+        video_tag.composition_time = BinaryUtil::getUint32(video_data, 3);
+
+        if (video_tag.avc_packet_type == AVC_SEQUENCE_HEADER) {
+            //todo: parse avc header
+        } else if (video_tag.avc_packet_type == AVC_NALU) {
+            video_tag.avc_data = video_data+4;
+        }
+    }
+
+    cout << "video frame type:" << getAVCFrameTypeDescription(video_tag.frame_type) << endl;
+    cout << "video codec id:" << (unsigned )video_tag.codec_id << endl;
+    cout << "avc packet type:" << (unsigned )video_tag.avc_packet_type << endl;
+}
 
 
 
