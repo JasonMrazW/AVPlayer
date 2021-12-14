@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <ctime>
 #include "player/SDLImagePlayer.hpp"
 #include "parser/header/YUVImageParser.h"
 #include "parser/header/RGBImageParser.h"
@@ -6,11 +8,41 @@
 #include "parser/header/H264Parser.h"
 #include "parser/header/AACParser.h"
 #include "parser/header/FLVParaser.h"
+#include "basic/basic.h"
 
 using namespace std;
 
+class Books {
+private:
+    int len;
+public:
+    Books(int l);
+    Books(const Books &books);
+};
+
+Books::Books(int l) : len(l){
+    clog << "constructor be called." << endl;
+}
+
+Books::Books(const Books &books) {
+    len = books.len;
+    clog << "len is " << len << endl;
+}
+
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
+
+    double a = 1.1;
+    double b = 12.1;
+    clog << maxNum(a, b) << endl;
+
+    clog << __LINE__ << endl;
+    clog << __DATE__ << endl;
+
+    //registerSignal();
+    createThreadsByPThead();
+    std::clog << "main program exit2" << std::endl;
+    createThread();
 
 //    CApp app;
 //    IImageParser *parser = new YUVImageParser;
@@ -26,8 +58,8 @@ int main() {
 //    AACParser aacParser;
 //    aacParser.init();
 
-    //FLVParaser flv_parser;
-    FLVParaser::init();
+//    FLVParaser flv_parser;
+//    FLVParaser::init();
 
 //    uint8_t *temp = new uint8_t [3];
 //    //0001e2

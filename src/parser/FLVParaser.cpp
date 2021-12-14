@@ -66,7 +66,7 @@ void FLVParaser::init() {
 
         switch (temp_tag.tag_type) {
             case AUDIO:
-                //parseAudioTag(temp_tag.data);
+                parseAudioTag(temp_tag.data);
                 break;
             case VIDEO:
                 parseVideoTag(temp_tag.data);

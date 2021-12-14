@@ -5,7 +5,10 @@ project(AVPlayer)
 
 
 
-set(CMAKE_C_STANDARD 11)
+# require C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMAKE")
 set(SOURCE_FILES
@@ -23,7 +26,7 @@ set(SOURCE_FILES
         src/io/AVFileUtil.cpp
         src/io/AVFileUtil.h
         src/parser/H264Parser.cpp
-        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h src/parser/header/FLVAMFInfo.h src/parser/header/FLVVideoTag.h src/parser/header/FLVAudioTag.h)
+        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h src/parser/header/FLVAMFInfo.h src/parser/header/FLVVideoTag.h src/parser/header/FLVAudioTag.h src/basic/basic.cpp src/basic/basic.h)
 
 Message("   ")
 Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )
@@ -44,12 +47,11 @@ target_link_libraries(AVPlayer ${SDL2_LIBRARIES})
 message("${SDL2_INCLUDE_DIRS}")
 message("${SDL2_LIBRARIES}")
 
-
 file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # ------- End Finds ------ #
 # ------- Inc & Link ---- #
 IF(APPLE)
-    MESSAGE("233")
+    MESSAGE("2233")
     SET(CMAKE_OSX_ARCHITECTURES "arm64;" CACHE STRING "Build architectures for Mac OS X" FORCE)
 ENDIF(APPLE)
 # ------- End ----------- #
