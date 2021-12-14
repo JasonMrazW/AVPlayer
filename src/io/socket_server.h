@@ -6,6 +6,7 @@
 #define AVPLAYER_SOCKET_SERVER_H
 #include <sys/socket.h>
 #include <iostream>
+#include "socket_info.h"
 
 class SocketServer {
 public:

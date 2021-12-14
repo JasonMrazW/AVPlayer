@@ -26,7 +26,7 @@ set(SOURCE_FILES
         src/io/AVFileUtil.cpp
         src/io/AVFileUtil.h
         src/parser/H264Parser.cpp
-        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h src/parser/header/FLVAMFInfo.h src/parser/header/FLVVideoTag.h src/parser/header/FLVAudioTag.h src/basic/basic.cpp src/basic/basic.h src/io/socket_server.cpp src/io/socket_server.h src/io/socket_client.cpp src/io/socket_client.h src/io/socket_tcp_server.cpp src/io/socket_tcp_server.h src/io/socket_udp_server.cpp src/io/socket_udp_server.h)
+        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h src/parser/header/FLVAMFInfo.h src/parser/header/FLVVideoTag.h src/parser/header/FLVAudioTag.h src/basic/basic.cpp src/basic/basic.h src/io/socket_server.cpp src/io/socket_server.h src/io/socket_client.cpp src/io/socket_client.h src/io/socket_tcp_server.cpp src/io/socket_tcp_server.h src/io/socket_udp_server.cpp src/io/socket_udp_server.h src/io/socket_tcp_client.cpp src/io/socket_tcp_client.h src/io/socket_info.h)
 
 Message("   ")
 Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )

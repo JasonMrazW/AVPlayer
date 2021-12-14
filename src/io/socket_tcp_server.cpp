@@ -3,11 +3,7 @@
 //
 
 #include "socket_tcp_server.h"
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+
 
 void TCPServer::start() {
     std::clog << "start.." << std::endl;
@@ -53,7 +49,7 @@ void TCPServer::start() {
             memset(buf, 0, sizeof(buf));
             int len = recv(conn, buf, sizeof (buf), 0);
             buf[len] = '\0';
-            if (strcmp(buf, "exit") == 0) {
+            if (strcmp(buf, SOCKET_CONNECT_END.c_str()) == 0) {
                 std::clog << "client disconnect..." << client_ip << std::endl;
                 break;
             }

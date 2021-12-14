@@ -3,3 +3,11 @@
 //
 
 #include "socket_client.h"
+
+SocketClient::SocketClient() {
+
+}
+
+SocketClient::~SocketClient() {
+
+}

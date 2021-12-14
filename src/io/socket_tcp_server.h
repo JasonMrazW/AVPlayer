@@ -6,7 +6,7 @@
 #define AVPLAYER_SOCKET_TCP_SERVER_H
 #include "socket_server.h"
 #include <iostream>
-#include <sys/errno.h>
+
 
 class TCPServer : public SocketServer {
 private:

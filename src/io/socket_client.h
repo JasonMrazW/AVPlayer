@@ -4,10 +4,18 @@
 
 #ifndef AVPLAYER_SOCKET_CLIENT_H
 #define AVPLAYER_SOCKET_CLIENT_H
+#include "socket_info.h"
 
+class SocketClient {
+private:
+    int socketFd;
+public:
+    SocketClient();
+    virtual ~SocketClient();
 
-class socket_client {
+    virtual void connectToServer() = 0;
 
+    virtual void disconnect() = 0;
 };
 
 
