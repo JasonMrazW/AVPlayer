@@ -9,6 +9,8 @@
 #include "parser/header/AACParser.h"
 #include "parser/header/FLVParaser.h"
 #include "basic/basic.h"
+#include "io/socket_server.h"
+#include "io/socket_tcp_server.h"
 
 using namespace std;
 
@@ -32,17 +34,16 @@ Books::Books(const Books &books) {
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
-    double a = 1.1;
-    double b = 12.1;
-    clog << maxNum(a, b) << endl;
-
-    clog << __LINE__ << endl;
-    clog << __DATE__ << endl;
-
     //registerSignal();
-    createThreadsByPThead();
-    std::clog << "main program exit2" << std::endl;
-    createThread();
+//    createThreadsByPThead();
+//    std::clog << "main program exit2" << std::endl;
+//    createThread();
+
+    SocketServer *server = new TCPServer();
+    server->start();
+    server->stop();
+
+    delete server;
 
 //    CApp app;
 //    IImageParser *parser = new YUVImageParser;
