@@ -25,9 +25,22 @@ void SocketTcpClient::connectToServer() {
         return;
     }
 
-
+    char data[255];
+    char buf[255];
+    while(true) {
+        std::cin >> data;
+        send(socketFd, data, sizeof (data), 0);
+        if (strcmp(data, SOCKET_CONNECT_END.c_str()) == 0) {
+            std::clog << "connection end..." << std::endl;
+            break;
+        }
+        memset(buf, 0, sizeof (buf));
+        int len = recv(socketFd, buf, sizeof (buf), 0);
+        buf[len] = '\0';
+        std::cout << "receive from server:" << buf << std::endl;
+    }
 }
 
 void SocketTcpClient::disconnect() {
-
+    close(socketFd);
 }
