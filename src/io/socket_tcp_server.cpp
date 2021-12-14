@@ -35,12 +35,32 @@ void TCPServer::start() {
     int conn;
     sockaddr_in *client_addr = new sockaddr_in();
     socklen_t client_addr_len = sizeof (*client_addr);
+
+    char client_ip[INET_ADDRSTRLEN] = "";
     while(!stoped) {
         conn = accept(socketFd, (sockaddr *)client_addr, &client_addr_len);
         if (conn < 0) {
             std::cerr << "accept socket failed." << errno << strerror(errno) << std::endl;
-            return;
+            continue;
         }
+
+        inet_ntop(AF_INET, &client_addr->sin_addr, client_ip, INET_ADDRSTRLEN);
+        std::clog << "client ip..." << client_ip << ":" << ntohs(client_addr->sin_port) << std::endl;
+
+        char buf[255];
+        std::string result ="hello";
+        while (true) {
+            memset(buf, 0, sizeof(buf));
+            int len = recv(conn, buf, sizeof (buf), 0);
+            buf[len] = '\0';
+            if (strcmp(buf, "exit") == 0) {
+                std::clog << "client disconnect..." << client_ip << std::endl;
+                break;
+            }
+            std::clog << buf << std::endl;
+            send(conn, result.c_str(), result.length(), 0);
+        }
+        close(conn);
     }
 }
 
