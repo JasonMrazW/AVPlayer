@@ -34,6 +34,7 @@ void TCPServer::start() {
 
     char client_ip[INET_ADDRSTRLEN] = "";
     while(!stoped) {
+        std::clog << "listening.." << std::endl;
         conn = accept(socketFd, (sockaddr *)client_addr, &client_addr_len);
         if (conn < 0) {
             std::cerr << "accept socket failed." << errno << strerror(errno) << std::endl;
@@ -53,7 +54,8 @@ void TCPServer::start() {
                 std::clog << "client disconnect..." << client_ip << std::endl;
                 break;
             }
-            std::clog << buf << std::endl;
+            std::clog << "receive from client:" << buf << std::endl;
+            //send back to client
             send(conn, result.c_str(), result.length(), 0);
         }
         close(conn);
@@ -61,7 +63,7 @@ void TCPServer::start() {
 }
 
 void TCPServer::stop() {
-    std::clog << "stop.." << std::endl;
+    std::clog << "server stopping.." << std::endl;
     stoped = true;
     close(socketFd);
 }
@@ -71,5 +73,5 @@ TCPServer::TCPServer() {
 }
 
 TCPServer::~TCPServer() {
-    std::clog << "un constructor.." << std::endl;
+
 }

@@ -51,7 +51,7 @@ file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # ------- End Finds ------ #
 # ------- Inc & Link ---- #
 IF(APPLE)
-    MESSAGE("3233")
+    MESSAGE("2")
     SET(CMAKE_OSX_ARCHITECTURES "arm64;" CACHE STRING "Build architectures for Mac OS X" FORCE)
 ENDIF(APPLE)
 # ------- End ----------- #

@@ -4,11 +4,15 @@
 
 #include "socket_tcp_client.h"
 
-SocketTcpClient::SocketTcpClient() {
+TcpClient::TcpClient() {
 
 }
 
-void SocketTcpClient::connectToServer() {
+TcpClient::~TcpClient() noexcept {
+    disconnect();
+}
+
+void TcpClient::connectToServer() {
     std::clog << "client start..." << std::endl;
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd == -1) {
@@ -20,7 +24,7 @@ void SocketTcpClient::connectToServer() {
     addr_in->sin_addr.s_addr = inet_addr("127.0.0.1");
     addr_in->sin_port = htons(8088);
     addr_in->sin_family = AF_INET;
-    if (connect(socketFd, (sockaddr*)addr_in, sizeof(addr_in)) < 0) {
+    if (connect(socketFd, (sockaddr*)addr_in, sizeof(*addr_in)) < 0) {
         std::cerr << "client connect failed." << errno << strerror(errno) << std::endl;
         return;
     }
@@ -31,7 +35,7 @@ void SocketTcpClient::connectToServer() {
         std::cin >> data;
         send(socketFd, data, sizeof (data), 0);
         if (strcmp(data, SOCKET_CONNECT_END.c_str()) == 0) {
-            std::clog << "connection end..." << std::endl;
+            std::clog << "client disconnect..." << std::endl;
             break;
         }
         memset(buf, 0, sizeof (buf));
@@ -41,6 +45,6 @@ void SocketTcpClient::connectToServer() {
     }
 }
 
-void SocketTcpClient::disconnect() {
+void TcpClient::disconnect() {
     close(socketFd);
 }

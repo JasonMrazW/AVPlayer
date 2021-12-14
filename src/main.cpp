@@ -11,24 +11,31 @@
 #include "basic/basic.h"
 #include "io/socket_server.h"
 #include "io/socket_tcp_server.h"
+#include "io/socket_client.h"
+#include "io/socket_tcp_client.h"
 
 using namespace std;
-
-class Books {
-private:
-    int len;
-public:
-    Books(int l);
-    Books(const Books &books);
-};
-
-Books::Books(int l) : len(l){
-    clog << "constructor be called." << endl;
+SocketServer *server;
+void serverCallback() {
+    server = new TCPServer();
+    server->start();
+    delete server;
 }
 
-Books::Books(const Books &books) {
-    len = books.len;
-    clog << "len is " << len << endl;
+void clientCallback() {
+    SocketClient *client = new TcpClient();
+    client->connectToServer();
+    client->disconnect();
+
+    delete client;
+}
+
+std::thread startServer() {
+    return std::thread(serverCallback);
+}
+
+std::thread startClient() {
+    return std::thread(clientCallback);
 }
 
 int main() {
@@ -39,11 +46,13 @@ int main() {
 //    std::clog << "main program exit2" << std::endl;
 //    createThread();
 
-    SocketServer *server = new TCPServer();
-    server->start();
-    server->stop();
+    std::thread server_thread = startServer();
+    std::thread client_thread = startClient();
 
-    delete server;
+    client_thread.join();
+    server->stop();
+    server_thread.join();
+
 
 //    CApp app;
 //    IImageParser *parser = new YUVImageParser;
