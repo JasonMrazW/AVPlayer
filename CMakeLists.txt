@@ -34,24 +34,41 @@ Message("")
 
 # ------- End Set Vars --- #
 
-
+#-------FFMpeg--------#
+include_directories("library/ffmpeg/include")
+link_directories("library/ffmpeg/lib/")
 # ------- Executable ----- #
+
 add_executable(AVPlayer ${SOURCE_FILES})
 
 # ------- Finds ---------- #
 set(SDL2_DIR "library/sdl2/sdl2-config.cmake")
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
-target_link_libraries(AVPlayer ${SDL2_LIBRARIES})
+
+target_link_libraries(
+        AVPlayer
+        ${SDL2_LIBRARIES}
+        avcodec
+        avfilter
+        avformat
+        avresample
+        avutil
+        postproc
+        swresample
+        swscale
+        )
 
 message("${SDL2_INCLUDE_DIRS}")
 message("${SDL2_LIBRARIES}")
+
+
 
 file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # ------- End Finds ------ #
 # ------- Inc & Link ---- #
 IF(APPLE)
-    MESSAGE("2")
+    MESSAGE("2333")
     SET(CMAKE_OSX_ARCHITECTURES "arm64;" CACHE STRING "Build architectures for Mac OS X" FORCE)
 ENDIF(APPLE)
 # ------- End ----------- #

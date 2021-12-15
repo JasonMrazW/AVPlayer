@@ -15,6 +15,10 @@
 #include "io/socket_tcp_client.h"
 #include "io/socket_udp_client.h"
 #include "io/socket_udp_server.h"
+extern "C" {
+#include <libavformat/avformat.h>
+}
+
 
 using namespace std;
 SocketServer *server;
@@ -41,6 +45,7 @@ std::thread startClient() {
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
+    std::cout << avcodec_configuration() << std::endl;
     //registerSignal();
 //    createThreadsByPThead();
 //    std::clog << "main program exit2" << std::endl;
