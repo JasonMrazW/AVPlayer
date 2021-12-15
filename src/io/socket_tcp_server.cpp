@@ -33,6 +33,7 @@ void TCPServer::start() {
     socklen_t client_addr_len = sizeof (*client_addr);
 
     char client_ip[INET_ADDRSTRLEN] = "";
+    std::string result ="ok!";
     while(!stoped) {
         std::clog << "tcp server: i'm listening.." << std::endl;
         conn = accept(socketFd, (sockaddr *)client_addr, &client_addr_len);
@@ -46,11 +47,9 @@ void TCPServer::start() {
 
         //简单实现了一个buf，传递长度不高的字符串
         char buf[255];
-        std::string result ="ok!";
         while (true) {
             memset(buf, 0, sizeof(buf));
-            int len = recv(conn, buf, sizeof (buf), 0);
-            buf[len] = '\0';
+            recv(conn, buf, sizeof (buf), 0);
             if (strcmp(buf, SOCKET_CONNECT_END.c_str()) == 0) {
                 std::clog << "tcp server: client disconnect..." << client_ip << std::endl;
                 break;

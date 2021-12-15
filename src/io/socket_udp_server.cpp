@@ -49,10 +49,10 @@ void UDPServer::start() {
             std::cerr << "receive failed: receive failed." << errno << strerror(errno) << std::endl;
             continue;
         }
+        std::clog << "udp server : data size" << ret << std::endl;
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
         std::clog << "udp server : client ip..." << client_ip << ":" << ntohs(client_addr.sin_port)  << " is sending data!" << std::endl;
 
-        buf[ret] = '\0';
         std::clog << "udp server: client says " << buf << std::endl;
         if (strcmp(buf, SOCKET_CONNECT_END.c_str()) == 0) {
             std::clog << "udp server: wait 1 seconds to exit." << std::endl;
