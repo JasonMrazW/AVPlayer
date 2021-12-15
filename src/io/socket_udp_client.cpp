@@ -33,28 +33,28 @@ void UDPClient::connectToServer() {
     sockaddr_in peer;
     ssize_t send_size = 0;
     while (!stoped) {
-        cout << "please input your message:" << endl;
+        cout << "udp client: please input your message:" << endl;
         memset(input_data, 0, sizeof (input_data));
         cin >> input_data;
 
         send_size = sendto(socket_fd, input_data, sizeof (input_data), 0, (sockaddr *)server_addr, server_addr_len);
         if (send_size < 0) {
-            cout << "send failed: code->" << errno << "  " << strerror(errno) << endl;
+            cout << "udp client: send failed: code->" << errno << "  " << strerror(errno) << endl;
             continue;
         }
 
         if (strcmp(input_data, SOCKET_CONNECT_END.c_str()) == 0) {
-            cout << "quit send status." << endl;
+            cout << "udp client: quit send status." << endl;
             break;
         }
         memset(receive_buf, 0 , sizeof (receive_buf));
         receive_len = recvfrom(socket_fd, receive_buf, sizeof(receive_buf), 0, (sockaddr *)&peer, &server_addr_len);
         if (receive_len <=0) {
-            cout << "receive data is empty." << endl;
+            cout << "udp client:receive data is empty." << endl;
             continue;
         }
         receive_buf[receive_len] = '\0';
-        cout << "client: server says " << receive_buf << endl;
+        cout << "udp client: server says " << receive_buf << endl;
     }
 }
 

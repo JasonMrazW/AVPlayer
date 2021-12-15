@@ -37,6 +37,7 @@ void UDPServer::start() {
     char buf[255];
     ssize_t ret;
     const std::string result ="ok!";
+    char client_ip[INET_ADDRSTRLEN] = "";
 
     while (!stoped) {
         client_addr_len = sizeof(client_addr);
@@ -47,6 +48,9 @@ void UDPServer::start() {
             std::cerr << "receive failed." << errno << strerror(errno) << std::endl;
             continue;
         }
+        inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+        std::clog << "udp server : client ip..." << client_ip << ":" << ntohs(client_addr.sin_port)  << " is sending data!" << std::endl;
+
         buf[ret] = '\0';
         std::clog << "udp server: client says " << buf << std::endl;
 
