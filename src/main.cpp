@@ -18,28 +18,24 @@
 
 using namespace std;
 SocketServer *server;
-void serverCallback() {
-//    server = new TCPServer();
-    server = new UDPServer();
-    server->start();
-    delete server;
-}
 
-void clientCallback() {
-//    SocketClient *client = new TcpClient();
-    SocketClient *client = new UDPClient();
-    client->connectToServer();
-    client->disconnect();
-
-    delete client;
-}
 
 std::thread startServer() {
-    return std::thread(serverCallback);
+    return std::thread([]() {
+        server = new UDPServer();
+        server->start();
+        delete server;
+    });
 }
 
 std::thread startClient() {
-    return std::thread(clientCallback);
+    return std::thread([]() {
+        SocketClient *client = new UDPClient();
+        client->connectToServer();
+        client->disconnect();
+
+        delete client;
+    });
 }
 
 int main() {

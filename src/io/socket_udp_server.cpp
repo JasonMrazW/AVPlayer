@@ -32,7 +32,7 @@ void UDPServer::start() {
         return;
     }
 
-    sockaddr_in client_addr;
+
     socklen_t client_addr_len;
     char buf[255];
     ssize_t ret;
@@ -40,12 +40,13 @@ void UDPServer::start() {
     char client_ip[INET_ADDRSTRLEN] = "";
 
     while (!stoped) {
+        sockaddr_in client_addr;
         client_addr_len = sizeof(client_addr);
         memset(buf, 0, sizeof (buf));
         std::clog << "udp server listening..." << std::endl;
         ret = recvfrom(socket_fd, buf, sizeof(buf), 0, (sockaddr *)&client_addr, &client_addr_len);
         if (ret <= 0) {
-            std::cerr << "receive failed." << errno << strerror(errno) << std::endl;
+            std::cerr << "receive failed: receive failed." << errno << strerror(errno) << std::endl;
             continue;
         }
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
@@ -53,6 +54,11 @@ void UDPServer::start() {
 
         buf[ret] = '\0';
         std::clog << "udp server: client says " << buf << std::endl;
+        if (strcmp(buf, SOCKET_CONNECT_END.c_str()) == 0) {
+            std::clog << "udp server: wait 1 seconds to exit." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            continue;
+        }
 
         //send back
         sendto(socket_fd, result.c_str(), result.length(), 0, (sockaddr*)&client_addr, client_addr_len);
@@ -62,6 +68,7 @@ void UDPServer::start() {
 }
 
 void UDPServer::stop() {
+    std::clog << "udp server: stop..." << std::endl;
     stoped = true;
     close(socket_fd);
 }

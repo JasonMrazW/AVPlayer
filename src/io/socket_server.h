@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <iostream>
 #include "socket_info.h"
+#include <thread>
 
 class SocketServer {
 public:
