@@ -7,6 +7,19 @@
 #include <iostream>
 #include <fstream>
 
+enum NALU_TYPE {
+    //0~23为真实的NALU类型
+
+    //一个PACKET包含多个NALU
+    NALU_TYPE_STAP_A = 24,
+    NALU_TYPE_STAP_B = 25,
+    NALU_TYPE_MTAP_16 = 26,
+    NALU_TYPE_MTAP_24 = 27,
+    //多个PACKET包含一个NALU
+    NALU_TYPE_FU_A = 28,
+    NALU_TYPE_FU_B = 29
+};
+
 class H264Parser {
 public:
     H264Parser();
@@ -33,7 +46,16 @@ public:
         NALU_Header *header;
         RBSP *rbsp;
     };
-    void init();
+    enum LOAD_FROM {
+        FILE,
+        STREAM
+    };
+
+    void loadFromFile();
+
+    void loadFromStream(uint8_t *data_content, uint32_t data_length);
+
+    void loadNALU(uint8_t *data_content, uint32_t data_length);
 
     static StartCodeType getNALUType(const unsigned char * buf);
 

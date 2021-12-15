@@ -35,13 +35,15 @@ void UDPServer::start() {
 
 
     socklen_t client_addr_len;
-    char buf[255];
+    uint8_t buf[2000]; //比mtu大一点
     ssize_t ret;
     const std::string result ="ok!";
     char client_ip[INET_ADDRSTRLEN] = "";
 
     std::ofstream out_stream;
     out_stream.open(UDP_FILE_PATH, std::ios::out | std::ios::binary);
+
+    parser = new RTPParser();
 
     while (!stoped) {
         sockaddr_in client_addr;
@@ -53,12 +55,12 @@ void UDPServer::start() {
             std::cerr << "receive failed: receive failed." << errno << strerror(errno) << std::endl;
             continue;
         }
-        std::clog << "udp server : data size" << ret << std::endl;
+        std::clog << "udp server : data size---->" << ret << std::endl;
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
-        std::clog << "udp server : client ip..." << client_ip << ":" << ntohs(client_addr.sin_port)  << " is sending data!" << std::endl;
+        //std::clog << "udp server : client ip..." << client_ip << ":" << ntohs(client_addr.sin_port)  << " is sending data!" << std::endl;
 
-        std::clog << "udp server: client says " << buf << std::endl;
-        if (strcmp(buf, SOCKET_CONNECT_END.c_str()) == 0) {
+        //std::clog << "udp server: client says " << buf << std::endl;
+        if (ret == 4 && strcmp((char*)buf, SOCKET_CONNECT_END.c_str()) == 0) {
             std::clog << "udp server: wait 1 seconds to exit." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
             out_stream.close();
@@ -67,11 +69,15 @@ void UDPServer::start() {
 
         out_stream << buf;
 
+        //解析RTP数据包
+        parser->parseOnePacket(buf, ret);
+
         //send back
-        sendto(socket_fd, result.c_str(), result.length(), 0, (sockaddr*)&client_addr, client_addr_len);
+        //sendto(socket_fd, result.c_str(), result.length(), 0, (sockaddr*)&client_addr, client_addr_len);
     }
 
     delete addr_in;
+    delete parser;
 }
 
 void UDPServer::stop() {

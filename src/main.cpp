@@ -63,7 +63,7 @@ int main() {
 //    audioPlayer.play("resources/out.pcm");
 
 //    H264Parser parser;
-//    parser.init();
+//    parser.loadFromFile();
 
 //    AACParser aacParser;
 //    aacParser.init();

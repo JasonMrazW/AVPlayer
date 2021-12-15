@@ -7,21 +7,29 @@
 const char *h264_path = "resources/video/tmp.264";
 using namespace std;
 
-void H264Parser::init() {
+
+void H264Parser::loadFromFile() {
     uint32_t fileLength = 0;
     uint8_t *fileContent = AVFileUtil::readBinaryFile(h264_path, fileLength);
+    loadNALU(fileContent, fileLength);
+}
 
-    std::cout << "file length : " << fileLength/(float)1000/1000 << "MB" << std::endl;
+void H264Parser::loadFromStream(uint8_t *data_content, uint32_t data_length) {
+    loadNALU(data_content, data_length);
+}
 
-    unsigned char * temp = fileContent;
+void H264Parser::loadNALU(uint8_t *data_content, uint32_t data_length) {
+    std::cout << "data length : " << data_length / (float)1000 / 1000 << "MB" << std::endl;
+
+    unsigned char * temp = data_content;
 
     int nalu_count = 0;
 
-    int *temp_naluStartPosition = new int[fileLength / 1000];
-    uint32_t *temp_naluLengthPosition = new uint32_t[fileLength / 1000];
+    int *temp_naluStartPosition = new int[data_length / 1000];
+    uint32_t *temp_naluLengthPosition = new uint32_t[data_length / 1000];
 
     StartCodeType type;
-    for (int i = 0; i < fileLength;) {
+    for (int i = 0; i < data_length;) {
         type = getNALUType(temp);
         switch (type) {
             case Frame_3Byte:
@@ -32,21 +40,21 @@ void H264Parser::init() {
                 }
                 temp_naluStartPosition[nalu_count++] = i;
                 break;
-            case Frame_4Byte:
-                //4个字节后是NALU的Header
-                i = i + 4;
-                if (nalu_count >= 1) {
-                    temp_naluLengthPosition[nalu_count-1] = i-4-temp_naluStartPosition[nalu_count-1];
-                }
-                temp_naluStartPosition[nalu_count++] = i;
-                break;
-            default:
-                i++;
-                break;
+                case Frame_4Byte:
+                    //4个字节后是NALU的Header
+                    i = i + 4;
+                    if (nalu_count >= 1) {
+                        temp_naluLengthPosition[nalu_count-1] = i-4-temp_naluStartPosition[nalu_count-1];
+                    }
+                    temp_naluStartPosition[nalu_count++] = i;
+                    break;
+                    default:
+                        i++;
+                        break;
         }
-        temp = &fileContent[i];
+        temp = &data_content[i];
     }
-    temp_naluLengthPosition[nalu_count-1] = fileLength-temp_naluStartPosition[nalu_count-1];
+    temp_naluLengthPosition[nalu_count-1] = data_length - temp_naluStartPosition[nalu_count - 1];
 
     std::cout << "nalu count:" << nalu_count << std::endl;
 
@@ -71,7 +79,7 @@ void H264Parser::init() {
         nalu_array[i] = *nalu_temp;
 
         //read first byte
-        loadHeader(fileContent, nalu_temp, nalu_start_position);
+        loadHeader(data_content, nalu_temp, nalu_start_position);
         //for test
         if (nalu_temp->header->nal_type == 5) {
             key_frame_count++;
@@ -79,7 +87,7 @@ void H264Parser::init() {
 
         //读第2个Byte到下一个NALU的起始字节，作为整个EBSP
         //指针指向NALU Header后第一个字节
-        unsigned char * ebsp_pointer = (fileContent + nalu_start_position + 1);
+        unsigned char * ebsp_pointer = (data_content + nalu_start_position + 1);
 
         unsigned int ebsp_length = temp_naluLengthPosition[i] - 1;
 
@@ -99,8 +107,9 @@ void H264Parser::init() {
     }while (i < nalu_count);
 
     std::cout << "key frame count:" << key_frame_count << std::endl;
-
 }
+
+
 
 unsigned char *  H264Parser::loadSODB(unsigned char *tmp_rbsp, uint32_t rbsp_length, uint32_t &sodb_length) {
     //从尾部向前遍历
@@ -211,3 +220,4 @@ H264Parser::StartCodeType H264Parser::getNALUType(const unsigned char *buf) {
         return other;
     }
 }
+
