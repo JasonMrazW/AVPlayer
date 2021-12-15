@@ -27,6 +27,8 @@ uint8_t *AVFileUtil::readBinaryFile(const char *path, uint32_t &fileLength) {
     return buffer;
 }
 
+
+
 uint16_t *AVFileUtil::readBinaryFileAsUint16(const char *path, unsigned int &fileLength) {
     //read file
     std::ifstream ifstream;
@@ -53,4 +55,6 @@ uint16_t *AVFileUtil::readBinaryFileAsUint16(const char *path, unsigned int &fil
 
     return buffer;
 }
+
+
 

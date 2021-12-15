@@ -4,6 +4,7 @@
 
 #include "socket_udp_server.h"
 
+static const std::string UDP_FILE_PATH = "resources/video/temp_udpfile.rtp";
 
 UDPServer::UDPServer() {
 
@@ -39,6 +40,9 @@ void UDPServer::start() {
     const std::string result ="ok!";
     char client_ip[INET_ADDRSTRLEN] = "";
 
+    std::ofstream out_stream;
+    out_stream.open(UDP_FILE_PATH, std::ios::out | std::ios::binary);
+
     while (!stoped) {
         sockaddr_in client_addr;
         client_addr_len = sizeof(client_addr);
@@ -57,8 +61,11 @@ void UDPServer::start() {
         if (strcmp(buf, SOCKET_CONNECT_END.c_str()) == 0) {
             std::clog << "udp server: wait 1 seconds to exit." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
+            out_stream.close();
             continue;
         }
+
+        out_stream << buf;
 
         //send back
         sendto(socket_fd, result.c_str(), result.length(), 0, (sockaddr*)&client_addr, client_addr_len);
