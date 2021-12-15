@@ -7,7 +7,7 @@
 
 void TCPServer::start() {
     std::clog << "tcp server start.." << std::endl;
-    socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_IPV4);
+    socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd == -1) {
         std::cerr << "tcp server: init socket failed." << errno << strerror(errno) << std::endl;
         return;

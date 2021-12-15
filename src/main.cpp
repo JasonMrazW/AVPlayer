@@ -13,17 +13,21 @@
 #include "io/socket_tcp_server.h"
 #include "io/socket_client.h"
 #include "io/socket_tcp_client.h"
+#include "io/socket_udp_client.h"
+#include "io/socket_udp_server.h"
 
 using namespace std;
 SocketServer *server;
 void serverCallback() {
-    server = new TCPServer();
+//    server = new TCPServer();
+    server = new UDPServer();
     server->start();
     delete server;
 }
 
 void clientCallback() {
-    SocketClient *client = new TcpClient();
+//    SocketClient *client = new TcpClient();
+    SocketClient *client = new UDPClient();
     client->connectToServer();
     client->disconnect();
 

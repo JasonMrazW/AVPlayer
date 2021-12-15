@@ -4,17 +4,17 @@
 
 #include "socket_tcp_client.h"
 
-TcpClient::TcpClient() {
+TCPClient::TCPClient() {
 
 }
 
-TcpClient::~TcpClient() noexcept {
+TCPClient::~TCPClient() noexcept {
     disconnect();
 }
 
-void TcpClient::connectToServer() {
+void TCPClient::connectToServer() {
     std::clog << "tcp client start..." << std::endl;
-    socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_IPV4);
+    socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if (socketFd == -1) {
         std::cerr << "init failed." << errno << strerror(errno) << std::endl;
         return;
@@ -31,7 +31,7 @@ void TcpClient::connectToServer() {
 
     char data[255];
     char buf[255];
-    while(true) {
+    while(!stoped) {
         std::cin >> data;
         send(socketFd, data, sizeof (data), 0);
         if (strcmp(data, SOCKET_CONNECT_END.c_str()) == 0) {
@@ -45,10 +45,9 @@ void TcpClient::connectToServer() {
     }
 
     delete addr_in;
-    delete &data;
-    delete &buf;
 }
 
-void TcpClient::disconnect() {
+void TCPClient::disconnect() {
+    stoped = true;
     close(socketFd);
 }

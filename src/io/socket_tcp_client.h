@@ -7,12 +7,13 @@
 #include "socket_client.h"
 #include <iostream>
 
-class TcpClient: public SocketClient{
+class TCPClient: public SocketClient{
 private:
     int socketFd;
+    bool stoped;
 public:
-    TcpClient();
-    ~TcpClient();
+    TCPClient();
+    ~TCPClient();
 
     void connectToServer() override;
 
