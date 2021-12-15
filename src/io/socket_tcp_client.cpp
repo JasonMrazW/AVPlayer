@@ -13,8 +13,8 @@ TcpClient::~TcpClient() noexcept {
 }
 
 void TcpClient::connectToServer() {
-    std::clog << "client start..." << std::endl;
-    socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    std::clog << "tcp client start..." << std::endl;
+    socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_IPV4);
     if (socketFd == -1) {
         std::cerr << "init failed." << errno << strerror(errno) << std::endl;
         return;
@@ -43,6 +43,10 @@ void TcpClient::connectToServer() {
         buf[len] = '\0';
         std::cout << "receive from server:" << buf << std::endl;
     }
+
+    delete addr_in;
+    delete &data;
+    delete &buf;
 }
 
 void TcpClient::disconnect() {
