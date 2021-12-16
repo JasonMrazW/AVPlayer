@@ -16,17 +16,17 @@
 const int SCREEN_WIDTH     = 900;
 const int SCREEN_HEIGHT    = 600;
 
-CApp::CApp() :
+SDLImagePlayer::SDLImagePlayer() :
     running(false)
 {
 }
 
-CApp::~CApp()
+SDLImagePlayer::~SDLImagePlayer()
 {
     OnCleanup();
 }
 
-int CApp::OnInit()
+int SDLImagePlayer::OnInit()
 {
     // Initialize the SDL library.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -48,7 +48,7 @@ int CApp::OnInit()
     return APP_OK;
 }
 
-void CApp::OnCleanup()
+void SDLImagePlayer::OnCleanup()
 {
     if (renderer != NULL) {
         SDL_DestroyRenderer(renderer);
@@ -60,7 +60,7 @@ void CApp::OnCleanup()
     SDL_Quit();
 }
 
-int CApp::OnExecute(IImageParser*    parser)
+int SDLImagePlayer::OnExecute(IImageParser*    parser)
 {
     // Initialize application.
     imageParser = parser;
@@ -87,7 +87,7 @@ int CApp::OnExecute(IImageParser*    parser)
     return state;
 }
 
-void CApp::OnEvent(SDL_Event* event)
+void SDLImagePlayer::OnEvent(SDL_Event* event)
 {
     switch (event->type)
     {
@@ -104,12 +104,12 @@ void CApp::OnEvent(SDL_Event* event)
     }
 }
 
-void CApp::OnUpdate()
+void SDLImagePlayer::OnUpdate()
 {
     // Update your game logic here
 }
 
-void CApp::OnRender()
+void SDLImagePlayer::OnRender()
 {
     SDL_UpdateTexture(texture, nullptr, imageParser->yuvFileData->data, imageParser->yuvFileData->pin);
 
@@ -118,5 +118,16 @@ void CApp::OnRender()
     SDL_RenderCopy(renderer, texture, nullptr, nullptr);
     
     SDL_RenderPresent(renderer);
+}
+
+void SDLImagePlayer::updateYUVFileData(YUVFileData &data) {
+    imageParser->yuvFileData = &data;
+    notifyGetVideoFrame();
+}
+
+void SDLImagePlayer::notifyGetVideoFrame() {
+    SDL_Event event;
+    event.type = SDL_USEREVENT;
+    SDL_PushEvent(&event);
 }
 

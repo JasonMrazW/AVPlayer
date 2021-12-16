@@ -15,7 +15,7 @@ public:
 
     virtual YUVFileData *loadFile();
 
-    char *      toGray(char *fileContent, int width, int height);
+    uint8_t *      toGray(uint8_t *fileContent, int width, int height);
 
     /**
      * YUV文件亮度调整
@@ -24,7 +24,7 @@ public:
      * @param height
      * @return
      */
-    char*        changeLumaForYUV420P(char *fileContent, int width, int height, float factor);
+    uint8_t*        changeLumaForYUV420P(uint8_t *fileContent, int width, int height, float factor);
 
     /**
      * 添加简单的边框效果
@@ -34,9 +34,10 @@ public:
      * @param border
      * @return
      */
-    char*        addBorderForYUV420P(char *fileContent, int width, int height, int border);
+    uint8_t*        addBorderForYUV420P(uint8_t *fileContent, int width, int height, int border);
 
 
+    YUVFileData *init();
 };
 
 #endif //AVPLAYER_YUVIMAGEPARSER_H

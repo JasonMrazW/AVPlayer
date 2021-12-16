@@ -43,11 +43,25 @@ std::thread startClient() {
     });
 }
 
+void loadFFmpeg(SDLImagePlayer &player) {
+    FFMainSample mainSample(&player);
+    mainSample.initContext();
+}
+
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
-    FFMainSample mainSample;
-    mainSample.initContext();
+    SDLImagePlayer player;
+    IImageParser *parser = new YUVImageParser();
+    parser->init();
+
+    std::thread thread(loadFFmpeg,std::ref(player));
+    std::clog << "address after:" << &player << endl;
+
+
+    player.OnExecute(parser);
+
+    thread.join();
 
     //registerSignal();
 //    createThreadsByPThead();

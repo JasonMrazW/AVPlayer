@@ -12,7 +12,8 @@ FFMainSample::~FFMainSample() {
 
 }
 
-FFMainSample::FFMainSample() {
+FFMainSample::FFMainSample(SDLImagePlayer *p) {
+    player = p;
 }
 
 void FFMainSample::initContext() {
@@ -35,6 +36,8 @@ void FFMainSample::initContext() {
     AVStream *video_stream = nullptr;
     AVStream *audio_stream = nullptr;
     uint8_t video_stream_index = -1;
+
+
     for (int i = 0; i < format_context->nb_streams; ++i) {
         switch (format_context->streams[i]->codecpar->codec_type) {
             case AVMEDIA_TYPE_VIDEO:
@@ -85,7 +88,11 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
 
     AVPacket *av_packet = av_packet_alloc();
     AVFrame *av_frame = av_frame_alloc();
-    YUVFileData *yuv_frame_data = nullptr;
+    YUVFileData *yuv_frame_data = new YUVFileData();
+
+    uint8_t *yuv_buffer = nullptr;
+    uint32_t buffer_size = 0;
+
     while(av_read_frame(format_context, av_packet) >= 0) {
         if (av_packet->stream_index != video_stream_index) {
             continue;
@@ -104,7 +111,38 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
                 break;
             }
 
-            clog << "frame count:" << codec_context->frame_number << endl;
+            //clog << "frame index:" << codec_context->frame_number << endl;
+            buffer_size = av_frame->width * av_frame->height * sizeof (uint8_t) * 3;
+            yuv_buffer = new uint8_t[buffer_size];
+            
+            //copy Y
+            for (int i = 0; i < av_frame->height; ++i) {
+                memcpy(yuv_buffer+av_frame->width*i,
+                       av_frame->data[0] + av_frame->linesize[0]*i,
+                       av_frame->width);
+            }
+
+            //copy U
+            int first_bytes = av_frame->width *av_frame->height;
+            for (int i = 0; i < av_frame->height/2; ++i) {
+                memcpy(yuv_buffer+ first_bytes + av_frame->width*i/2,
+                       av_frame->data[1] + av_frame->linesize[1]*i,
+                       av_frame->width/2);
+            }
+
+            //copy V
+            first_bytes += first_bytes/4;
+            for (int i = 0; i < av_frame->height/2; ++i) {
+                memcpy(yuv_buffer + first_bytes + av_frame->width *i/2,
+                       av_frame->data[2] + av_frame->linesize[2]*i,
+                       av_frame->width/2);
+            }
+
+            yuv_frame_data = new YUVFileData();
+            yuv_frame_data->data = yuv_buffer;
+            yuv_frame_data->pin = av_frame->width;
+
+            player->updateYUVFileData(*yuv_frame_data);
 
             av_frame_unref(av_frame);
         }
@@ -115,3 +153,4 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
     av_frame_unref(av_frame);
     avcodec_close(codec_context);
 }
+

@@ -17,8 +17,9 @@ extern "C" {
 
 class FFMainSample {
 private:
+    SDLImagePlayer *player;
 public:
-    FFMainSample();
+    FFMainSample(SDLImagePlayer *player);
     ~FFMainSample();
 
     void initContext();

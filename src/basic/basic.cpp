@@ -108,6 +108,7 @@ void customThreadCallback2(int t) {
 }
 
 void createThread() {
-    std::thread t1(customThreadCallback2, 10);
+    int a = 10;
+    std::thread t1(customThreadCallback2, a);
     t1.join();
 }

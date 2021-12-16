@@ -25,6 +25,8 @@ public:
         return NULL;
     }
 
+    virtual YUVFileData *init() = 0;
+
     /**
      * 加载二进制数据，返回char*
      * @param yuvFilePath
@@ -32,7 +34,7 @@ public:
      * @param height
      * @return
      */
-    static char * loadFile(const char *yuvFilePath, int width, int height) {
+    static uint8_t * loadFile(const char *yuvFilePath, int width, int height) {
         //read file
         std::ifstream ifstream;
         ifstream.open(yuvFilePath, std::ios::in | std::ios::binary);
@@ -45,8 +47,8 @@ public:
         }
         ifstream.seekg(0, std::ios_base::beg);
         int frameSize = width * height * 3/2;
-        char* buffer = new char[length];
-        ifstream.read(buffer, length);
+        uint8_t* buffer = new uint8_t[length];
+        ifstream.read(reinterpret_cast<char *>(buffer), length);
         //close file
         ifstream.close();
 

@@ -23,11 +23,22 @@ YUVFileData *RGBImageParser::loadFile() {
  * @param width
  * @param height
  */
-void RGBImageParser::toR(char *data, int width, int height) {
+void RGBImageParser::toR(uint8_t *data, int width, int height) {
     int length = width * height * 3;
 
     for (int i = 0; i < length; ++i) {
         if (i%3 == 0) continue;
         data[i] = 0;
     }
+}
+
+YUVFileData *RGBImageParser::init() {
+    YUVFileData *fileData = new YUVFileData();
+    fileData->width = 1080;
+    fileData->height = 1920;
+    fileData->format = SDL_PIXELFORMAT_RGB24;
+    fileData->pin = fileData->width; //一行像素占的空间，单位：字节
+
+    yuvFileData = fileData;
+    return fileData;
 }

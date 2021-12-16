@@ -20,7 +20,7 @@
 // [CApp]
 // ============================================================================
 // This is just a sample SDL application class to test that the app works.
-class CApp
+class SDLImagePlayer
 {
 public:
 
@@ -31,11 +31,13 @@ public:
         APP_FAILED = 1
     };
 
-    CApp();
-    ~CApp();
+    SDLImagePlayer();
+    ~SDLImagePlayer();
     
     // Run application, called by your code.
     int             OnExecute(IImageParser*    imageParser);
+
+    void updateYUVFileData(YUVFileData &data);
 
 private:
     
@@ -62,6 +64,8 @@ private:
     
     // Called to render the app.
     void             OnRender();
+
+    void notifyGetVideoFrame();
 };
 
 #endif /* SDLActivity_hpp */

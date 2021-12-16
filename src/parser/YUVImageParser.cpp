@@ -25,6 +25,18 @@ YUVImageParser::YUVImageParser() {
     return fileData;
 }
 
+YUVFileData *YUVImageParser::init() {
+    YUVFileData *fileData = new YUVFileData();
+    fileData->data = IImageParser::loadFile(tmp_filePath, tmp_file_width, tmp_file_height);;
+    fileData->width = 1920;
+    fileData->height = 1080;
+    fileData->format = SDL_PIXELFORMAT_IYUV;
+    fileData->pin = fileData->width; //一行像素占的空间，单位：字节
+
+    yuvFileData = fileData;
+    return fileData;
+}
+
 /**
  * 420p数据组织格式
  * Y:1个字节，U：0.5个字节，V:0.5个字节
@@ -33,13 +45,13 @@ YUVImageParser::YUVImageParser() {
  * @param width
  * @param height
  */
-char * YUVImageParser::toGray(char *fileContent, int width, int height) {
+uint8_t * YUVImageParser::toGray(uint8_t *fileContent, int width, int height) {
     // Y分量所占得大小：width * height
     int y_length = width * height;
     // U、V 分量共同占有得大小：width * height
     int uv_length = width * height;
 
-    int fileLength = strlen(fileContent);
+    int fileLength = -1;
     for (int i = y_length; i < fileLength; ++i) {
         //至为128即为初始值
         fileContent[i] = 128;
@@ -56,7 +68,7 @@ char * YUVImageParser::toGray(char *fileContent, int width, int height) {
  * @param factor
  * @return
  */
-char *YUVImageParser::changeLumaForYUV420P(char *fileContent, int width, int height, float factor) {
+uint8_t *YUVImageParser::changeLumaForYUV420P(uint8_t *fileContent, int width, int height, float factor) {
     int y_length = width * height;
     for (int i = 0; i < y_length; ++i) {
         fileContent[i] = fileContent[i] * factor;
@@ -72,7 +84,7 @@ char *YUVImageParser::changeLumaForYUV420P(char *fileContent, int width, int hei
  * @param border
  * @return
  */
-char *YUVImageParser::addBorderForYUV420P(char *fileContent, int width, int height, int border) {
+uint8_t *YUVImageParser::addBorderForYUV420P(uint8_t *fileContent, int width, int height, int border) {
     //逐行扫描
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
