@@ -35,8 +35,23 @@ Message("")
 # ------- End Set Vars --- #
 
 #-------FFMpeg--------#
-include_directories("library/ffmpeg/include")
-link_directories("library/ffmpeg/lib/")
+if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")
+    # FFmpeg的安装目录，可以通过命令"brew info ffmpeg"获取
+    set(FFMPEG_DIR /opt/homebrew/Cellar/ffmpeg/4.4_2)
+    # 头文件搜索路径
+    include_directories(${FFMPEG_DIR}/include/)
+    # 动态链接库或静态链接库的搜索路径
+    link_directories(${FFMPEG_DIR}/lib/)
+endif ()
+
+if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+    # FFmpeg的安装目录，可以通过命令"brew info ffmpeg"获取
+    set(FFMPEG_DIR /usr/local/Cellar/ffmpeg/4.4_2)
+    # 头文件搜索路径
+    include_directories(${FFMPEG_DIR}/include/)
+    # 动态链接库或静态链接库的搜索路径
+    link_directories(${FFMPEG_DIR}/lib/)
+endif ()
 # ------- Executable ----- #
 
 add_executable(AVPlayer ${SOURCE_FILES})
@@ -45,6 +60,7 @@ add_executable(AVPlayer ${SOURCE_FILES})
 set(SDL2_DIR "library/sdl2/sdl2-config.cmake")
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
+
 
 target_link_libraries(
         AVPlayer
@@ -67,8 +83,11 @@ message("${SDL2_LIBRARIES}")
 file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # ------- End Finds ------ #
 # ------- Inc & Link ---- #
+message("-- CMAKE_HOST_SYSTEM_PROCESSOR: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+
 IF(APPLE)
-    MESSAGE("2333")
-    SET(CMAKE_OSX_ARCHITECTURES "arm64;" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")
+        SET(CMAKE_OSX_ARCHITECTURES "arm64;" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    endif ()
 ENDIF(APPLE)
 # ------- End ----------- #
