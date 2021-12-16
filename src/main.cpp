@@ -15,6 +15,7 @@
 #include "io/socket_tcp_client.h"
 #include "io/socket_udp_client.h"
 #include "io/socket_udp_server.h"
+#include "ffmpeg/ff_main_sample.h"
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -45,18 +46,20 @@ std::thread startClient() {
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
-    std::cout << avcodec_configuration() << std::endl;
+    FFMainSample mainSample;
+    mainSample.initContext();
+
     //registerSignal();
 //    createThreadsByPThead();
 //    std::clog << "main program exit2" << std::endl;
 //    createThread();
 
-    std::thread server_thread = startServer();
-    std::thread client_thread = startClient();
-
-    client_thread.join();
-    server->stop();
-    server_thread.join();
+//    std::thread server_thread = startServer();
+//    std::thread client_thread = startClient();
+//
+//    client_thread.join();
+//    server->stop();
+//    server_thread.join();
 
 
 //    CApp app;
