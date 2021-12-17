@@ -15,12 +15,14 @@ extern "C" {
 #include "../parser/header/IImageParser.h"
 #include "../parser/header/YUVImageParser.h"
 #include "../player/SDLImagePlayer.hpp"
+#include "../player/SDLAudioPlayer.h"
 
 class FFMainSample {
 private:
     SDLImagePlayer *player;
+    SDLAudioPlayer *audio_player;
 public:
-    FFMainSample(SDLImagePlayer *player);
+    FFMainSample(SDLImagePlayer *player, SDLAudioPlayer *audioPlayer);
     ~FFMainSample();
 
     void initContext();
@@ -28,6 +30,8 @@ public:
     void printAVDictionary(AVDictionary *dic);
 
     void decodeVideo(AVStream *video_stream, AVFormatContext *format_context, uint8_t video_stream_index);
+
+    void decodeAudio(AVStream *audio_stream, AVFormatContext *format_context, uint8_t audio_stream_index);
 };
 
 

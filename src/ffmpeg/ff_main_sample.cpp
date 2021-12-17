@@ -6,14 +6,15 @@
 
 using namespace std;
 
-static const char *const FF_URL = "https://d1--cn-gotcha04.bilivideo.com/live-bvc/919638/live_2087957890_69851677_1500.flv?expires=1639713368&len=0&oi=460523204&pt=web&qn=0&trid=100032c68ce8736a41c6ad6ebafe6c9355c4&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha04&sign=48477b7f9684e62e61b98a069024e106&p2p_type=1&src=9&sl=1&free_type=0&flowtype=1&machinezone=ylf&sk=2935686d6cb9146c7a6a6a0b4e120e250342be3df4dc8310261aab0ce9e21e44&source=onetier&order=1";
+static const char *const FF_URL = "resources/video/sample.flv";
 
 FFMainSample::~FFMainSample() {
 
 }
 
-FFMainSample::FFMainSample(SDLImagePlayer *p) {
+FFMainSample::FFMainSample(SDLImagePlayer *p, SDLAudioPlayer *audioPlayer) {
     player = p;
+    audio_player = audioPlayer;
 }
 
 void FFMainSample::initContext() {
@@ -36,6 +37,7 @@ void FFMainSample::initContext() {
     AVStream *video_stream = nullptr;
     AVStream *audio_stream = nullptr;
     uint8_t video_stream_index = -1;
+    uint8_t audio_stream_index = -1;
 
 
     for (int i = 0; i < format_context->nb_streams; ++i) {
@@ -46,6 +48,7 @@ void FFMainSample::initContext() {
                 break;
             case AVMEDIA_TYPE_AUDIO:
                 audio_stream = format_context->streams[i];
+                audio_stream_index = i;
                 break;
             default:
                 continue;
@@ -53,8 +56,8 @@ void FFMainSample::initContext() {
     }
 
     //decode video frame
-    decodeVideo(video_stream, format_context, video_stream_index);
-
+    //decodeVideo(video_stream, format_context, video_stream_index);
+    decodeAudio(audio_stream, format_context, audio_stream_index);
     avformat_close_input(&format_context);
 }
 
@@ -120,10 +123,10 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
                 //receive frame end
                 break;
             }
-            
+
             yuv_frame = av_frame_alloc();
             av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, out_buffer, video_format, codec_context->width, codec_context->height,1);
-            sws_scale(sws_context,(const uint8_t * const*)av_frame->data,av_frame->linesize,0,av_frame->height,yuv_frame->data,yuv_frame->linesize);
+            sws_scale(sws_context,av_frame->data,av_frame->linesize,0,av_frame->height,yuv_frame->data,yuv_frame->linesize);
 
             yuv_frame_data->data = out_buffer;
             yuv_frame_data->pin = av_frame->width;
@@ -140,6 +143,82 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
     av_frame_unref(av_frame);
     av_frame_unref(yuv_frame);
     sws_freeContext(sws_context);
+    avcodec_close(codec_context);
+}
+
+void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_context, uint8_t audio_stream_index) {
+    AVCodec *codec = avcodec_find_decoder(audio_stream->codecpar->codec_id);
+    if (codec == nullptr) {
+        cerr << "init audio codec failed." << endl;
+        return;
+    }
+
+    AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+    avcodec_parameters_to_context(codec_context, audio_stream->codecpar);
+    int ret = avcodec_open2(codec_context, codec, nullptr);
+    if( ret < 0) {
+        cerr << "open audio codec failed. error code :" << ret << endl;
+        return;
+    }
+
+    AVPacket *av_packet = av_packet_alloc();
+    AVFrame *av_frame = av_frame_alloc();
+
+    //一个采样点所占的字节数
+    cout << "audio sample fmt:" << codec_context->sample_fmt << endl;
+    //8: AV_SAMPLE_FMT_FLTP
+    uint8_t one_byte_size = av_get_bytes_per_sample(codec_context->sample_fmt);
+    uint32_t buffer_size;
+    while (av_read_frame(format_context, av_packet) >= 0) {
+        if (av_packet->stream_index != audio_stream_index) {
+            continue;
+        }
+
+        ret = avcodec_send_packet(codec_context, av_packet);
+        if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            cerr << "codec send packed failed. error code :" << ret << endl;
+            break;
+        }
+
+        while(ret >= 0) {
+            ret = avcodec_receive_frame(codec_context, av_frame);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                //receive frame end
+                break;
+            }
+
+            //一帧数据的大小(表示有nb_samples的数据) = channels * nb_samples * format所占字节
+            buffer_size = av_samples_get_buffer_size(av_frame->linesize, av_frame->channels, av_frame->nb_samples,
+                                                     static_cast<AVSampleFormat>(av_frame->format), 1);
+
+            clog << "buffer size:" << av_frame->channels << endl;
+            //左声道
+            uint8_t *sample_buffer_l = av_frame->extended_data[0];
+            //右声道
+            uint8_t *sample_buffer_r = av_frame->extended_data[1];
+
+            uint8_t *pcm_buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
+            //根据音频格式进行数据的转换
+            if (av_frame->format == AV_SAMPLE_FMT_FLTP) { //32位float,little endian
+                //L L R R L L R R
+                for (int i = 0, j=0; i < buffer_size; i+=8, j+=4) {
+                    pcm_buffer[i] = sample_buffer_l[j];
+                    pcm_buffer[i+1] = sample_buffer_l[j+1];
+                    pcm_buffer[i+2] = sample_buffer_r[j+2];
+                    pcm_buffer[i+3] = sample_buffer_r[j+3];
+
+                    i+=4;
+                    pcm_buffer[i] = sample_buffer_r[j];
+                    pcm_buffer[i+1] = sample_buffer_r[j+1];
+                    pcm_buffer[i+2] = sample_buffer_r[j+2];
+                    pcm_buffer[i+3] = sample_buffer_r[j+3];
+                }
+
+                //pcm_buffer to play
+            }
+        }
+    }
+
     avcodec_close(codec_context);
 }
 
