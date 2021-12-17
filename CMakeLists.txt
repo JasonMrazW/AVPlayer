@@ -46,7 +46,7 @@ endif ()
 
 if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     # FFmpeg的安装目录，可以通过命令"brew info ffmpeg"获取
-    set(FFMPEG_DIR /usr/local/Cellar/ffmpeg/4.4_2)
+    set(FFMPEG_DIR /usr/local/Cellar/ffmpeg/4.4.1_3)
     # 头文件搜索路径
     include_directories(${FFMPEG_DIR}/include/)
     # 动态链接库或静态链接库的搜索路径
