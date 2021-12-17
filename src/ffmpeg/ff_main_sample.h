@@ -18,6 +18,7 @@ extern "C" {
 #include "../player/SDLImagePlayer.hpp"
 #include "../player/SDLAudioStreamPlayer.h"
 #include <thread>
+#include "../util/ConvertUtil.h"
 
 class FFMainSample {
 private:

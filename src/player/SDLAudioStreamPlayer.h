@@ -25,7 +25,7 @@ public:
 
     void startAudioPlayer();
 
-    int openAudioDevice(uint16_t audio_format, uint16_t ns_samples, int freq, uint8_t channels);
+    int openAudioDevice(SDL_AudioFormat audio_format, uint16_t ns_samples, int freq, uint8_t channels);
 
     void updateAudioData(uint8_t* audio_data, uint32_t audio_length);
 private:

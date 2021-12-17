@@ -208,7 +208,7 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
             }
 
             if (!opened) {
-                audio_player->openAudioDevice(audio_stream->codecpar->format,
+                audio_player->openAudioDevice(ConvertUtil::AVSampleFormatToSDLAudioFormat(out_sample_format),
                                               av_frame->nb_samples, av_frame->sample_rate, av_frame->channels);
                 opened = true;
             }
@@ -236,14 +236,6 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
 
     avcodec_close(codec_context);
 }
-
-static void print_sample_format(AVFrame *frame) {
-    printf("ar-samplerate: %uHz\n", frame->sample_rate);
-    printf("ac-channel: %u\n", frame->channels);
-    printf("f-format: %u\n", frame->format);// 格式需要注意，实际存储到本地文件时已经改成交错模式
-}
-
-
 
 // AVFrame To YUV
 //            uint8_t *yuv_buffer;

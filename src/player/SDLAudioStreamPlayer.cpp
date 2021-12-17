@@ -54,16 +54,16 @@ void SDLAudioStreamPlayer::startAudioPlayer() {
 }
 
 
-int SDLAudioStreamPlayer::openAudioDevice(uint16_t audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
+int SDLAudioStreamPlayer::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
     if (audioDeviceId != 0) {
         SDL_CloseAudio();
     }
     //init audio info
-    audioFormat = AUDIO_S16;
+    audioFormat = audio_format;
     audioSpec = SDL_AudioSpec();
     audioSpec.samples = nb_samples;
     audioSpec.freq = freq;
-    audioSpec.format = AUDIO_S16;
+    audioSpec.format = audio_format;
     audioSpec.channels = channels;
     audioSpec.silence = 0;
     audioSpec.callback = audio_callback;
@@ -89,7 +89,7 @@ void SDLAudioStreamPlayer::fillDataCallBack(void *userdata, uint8_t * stream, in
     SDL_memset(stream, 0, len);
 
     len = len > audio_length.value ? audio_length.value : len;
-    std::cout << "play data length:" << len << std::endl;
+    std::cout << "playing audio data length:" << len << std::endl;
 
     //混合播放
     SDL_LockMutex(mutex);
