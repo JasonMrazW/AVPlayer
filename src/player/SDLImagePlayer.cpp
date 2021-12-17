@@ -125,6 +125,11 @@ void SDLImagePlayer::updateYUVFileData(YUVFileData &data) {
     notifyGetVideoFrame();
 }
 
+void SDLImagePlayer::reInit(int width, int height) {
+    SDL_DestroyTexture(texture);
+    texture = SDL_CreateTexture(renderer, imageParser->yuvFileData->format, SDL_TEXTUREACCESS_STREAMING, width, height);
+}
+
 void SDLImagePlayer::notifyGetVideoFrame() {
     SDL_Event event;
     event.type = SDL_USEREVENT;

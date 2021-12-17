@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static const char *const LOCAL_FF_PATH = "resources/video/sample.flv";
+static const char *const FF_URL = "https://d1--cn-gotcha04.bilivideo.com/live-bvc/919638/live_2087957890_69851677_1500.flv?expires=1639713368&len=0&oi=460523204&pt=web&qn=0&trid=100032c68ce8736a41c6ad6ebafe6c9355c4&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha04&sign=48477b7f9684e62e61b98a069024e106&p2p_type=1&src=9&sl=1&free_type=0&flowtype=1&machinezone=ylf&sk=2935686d6cb9146c7a6a6a0b4e120e250342be3df4dc8310261aab0ce9e21e44&source=onetier&order=1";
 
 FFMainSample::~FFMainSample() {
 
@@ -19,7 +19,7 @@ FFMainSample::FFMainSample(SDLImagePlayer *p) {
 void FFMainSample::initContext() {
     AVFormatContext *format_context = nullptr;
     AVDictionary *dic = nullptr;
-    int ret = avformat_open_input(&format_context, LOCAL_FF_PATH, nullptr, &dic);
+    int ret = avformat_open_input(&format_context, FF_URL, nullptr, &dic);
     if (ret < 0) {
         cerr << "open file failed. error code :" << errno << " "<< strerror(errno) << endl;
         return;
@@ -88,10 +88,20 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
 
     AVPacket *av_packet = av_packet_alloc();
     AVFrame *av_frame = av_frame_alloc();
+    AVFrame *yuv_frame = av_frame_alloc();
     YUVFileData *yuv_frame_data = new YUVFileData();
 
-    uint8_t *yuv_buffer = nullptr;
-    uint32_t buffer_size = 0;
+    player->reInit(codec_context->width, codec_context->height);
+
+    //根据图像格式，计算出一帧图像的大小
+    AVPixelFormat video_format = static_cast<AVPixelFormat>(video_stream->codecpar->format);
+    uint32_t buffer_size = av_image_get_buffer_size(video_format, codec_context->width, codec_context->height, 1);
+    uint8_t *out_buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
+    //填充默认数据
+
+    SwsContext *sws_context = sws_getContext(codec_context->width, codec_context->height,video_format,
+                                             codec_context->width, codec_context->height,video_format,
+                                             SWS_BICUBIC, nullptr,nullptr,nullptr);
 
     while(av_read_frame(format_context, av_packet) >= 0) {
         if (av_packet->stream_index != video_stream_index) {
@@ -110,40 +120,17 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
                 //receive frame end
                 break;
             }
-
-            //clog << "frame index:" << codec_context->frame_number << endl;
-            buffer_size = av_frame->width * av_frame->height * sizeof (uint8_t) * 3;
-            yuv_buffer = new uint8_t[buffer_size];
             
-            //copy Y
-            for (int i = 0; i < av_frame->height; ++i) {
-                memcpy(yuv_buffer+av_frame->width*i,
-                       av_frame->data[0] + av_frame->linesize[0]*i,
-                       av_frame->width);
-            }
+            yuv_frame = av_frame_alloc();
+            av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, out_buffer, video_format, codec_context->width, codec_context->height,1);
+            sws_scale(sws_context,(const uint8_t * const*)av_frame->data,av_frame->linesize,0,av_frame->height,yuv_frame->data,yuv_frame->linesize);
 
-            //copy U
-            int first_bytes = av_frame->width *av_frame->height;
-            for (int i = 0; i < av_frame->height/2; ++i) {
-                memcpy(yuv_buffer+ first_bytes + av_frame->width*i/2,
-                       av_frame->data[1] + av_frame->linesize[1]*i,
-                       av_frame->width/2);
-            }
-
-            //copy V
-            first_bytes += first_bytes/4;
-            for (int i = 0; i < av_frame->height/2; ++i) {
-                memcpy(yuv_buffer + first_bytes + av_frame->width *i/2,
-                       av_frame->data[2] + av_frame->linesize[2]*i,
-                       av_frame->width/2);
-            }
-
-            yuv_frame_data = new YUVFileData();
-            yuv_frame_data->data = yuv_buffer;
+            yuv_frame_data->data = out_buffer;
             yuv_frame_data->pin = av_frame->width;
 
             player->updateYUVFileData(*yuv_frame_data);
 
+            av_frame_unref(yuv_frame);
             av_frame_unref(av_frame);
         }
         av_packet_unref(av_packet);
@@ -151,6 +138,33 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
 
     av_packet_unref(av_packet);
     av_frame_unref(av_frame);
+    av_frame_unref(yuv_frame);
+    sws_freeContext(sws_context);
     avcodec_close(codec_context);
 }
 
+// AVFrame To YUV
+//            uint8_t *yuv_buffer;
+//            buffer_size = av_frame->width * av_frame->height * sizeof (uint8_t) * 3;
+//            //copy Y
+//            for (int i = 0; i < av_frame->height; ++i) {
+//                memcpy(yuv_buffer+av_frame->width*i,
+//                       av_frame->data[0] + av_frame->linesize[0]*i,
+//                       av_frame->width);
+//            }
+//
+//            //copy U
+//            int first_bytes = av_frame->width *av_frame->height;
+//            for (int i = 0; i < av_frame->height/2; ++i) {
+//                memcpy(yuv_buffer+ first_bytes + av_frame->width*i/2,
+//                       av_frame->data[1] + av_frame->linesize[1]*i,
+//                       av_frame->width/2);
+//            }
+//
+//            //copy V
+//            first_bytes += first_bytes/4;
+//            for (int i = 0; i < av_frame->height/2; ++i) {
+//                memcpy(yuv_buffer + first_bytes + av_frame->width *i/2,
+//                       av_frame->data[2] + av_frame->linesize[2]*i,
+//                       av_frame->width/2);
+//            }

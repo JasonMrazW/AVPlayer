@@ -39,6 +39,7 @@ public:
 
     void updateYUVFileData(YUVFileData &data);
 
+    void reInit(int width, int height);
 private:
     
     // Whether the application is running.
@@ -66,6 +67,7 @@ private:
     void             OnRender();
 
     void notifyGetVideoFrame();
+
 };
 
 #endif /* SDLActivity_hpp */
