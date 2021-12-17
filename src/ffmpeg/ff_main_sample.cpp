@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static const char *const FF_URL = "https://d1--cn-gotcha03.bilivideo.com/live-bvc/199488/live_10867865_7186953_1500.flv?expires=1639739583&len=0&oi=460523204&pt=web&qn=0&trid=10005ee82ea41d1e452e9f6a333a65a67591&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=fd95e0dd990d8d74d07c6a034f57baeb&p2p_type=1&src=5&sl=1&free_type=0&flowtype=1&machinezone=ylf&sk=3a420908fce81ecdbf52dc207cf66dcc&source=onetier&order=1";
+static const char *const FF_URL = "https://d1--cn-gotcha03.bilivideo.com/live-bvc/295559/live_10867865_7186953.flv?expires=1639744333&len=0&oi=3030954244&pt=web&qn=10000&trid=1000117297ba3f894e2b9ba3672aecdd107c&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=9e6691a7823b4b301a50f2051189e591&p2p_type=1&src=5&sl=1&free_type=0&flowtype=1&machinezone=jd&sk=3a420908fce81ecdbf52dc207cf66dcc&source=onetier&order=1";
 
 static void print_sample_format(AVFrame *pFrame);
 
@@ -184,7 +184,7 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
     cout << "audio sample fmt:" << codec_context->sample_fmt << endl;
     int buffer_size;
     bool opened = false;
-    buffer_size = av_samples_get_buffer_size(NULL, codec_context->channels, 2048,
+    buffer_size = av_samples_get_buffer_size(NULL, codec_context->channels, 1024,
                                              out_sample_format, 1);
     uint8_t * output_buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
     memset(output_buffer, 0, buffer_size);
@@ -213,24 +213,20 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
                 opened = true;
             }
 
+            //一帧数据的大小(表示有nb_samples的数据) = channels * nb_samples * format所占字节
+            buffer_size = av_samples_get_buffer_size(NULL, av_frame->channels, av_frame->nb_samples,
+                                                     out_sample_format, 1);
 
-            //根据音频格式进行数据的转换
-            if (av_frame->format == AV_SAMPLE_FMT_FLTP) { //32位float,little endian
-                //一帧数据的大小(表示有nb_samples的数据) = channels * nb_samples * format所占字节
-                buffer_size = av_samples_get_buffer_size(NULL, av_frame->channels, av_frame->nb_samples,
-                                                         out_sample_format, 1);
-
-                int samples = swr_convert(swr_context, &output_buffer, av_frame->nb_samples,
+            int samples = swr_convert(swr_context, &output_buffer, av_frame->nb_samples,
                                       (const uint8_t **)av_frame->extended_data, av_frame->nb_samples);
-                if (samples <= 0) {
-                    cerr << "convert audio info failed." << endl;
-                    break;
-                }
-                //pcm_buffer to play
-                audio_player->updateAudioData(output_buffer, buffer_size);
-
-                av_frame_unref(av_frame);
+            if (samples <= 0) {
+                cerr << "convert audio info failed." << endl;
+                break;
             }
+            //pcm_buffer to play
+            audio_player->updateAudioData(output_buffer, buffer_size);
+
+            av_frame_unref(av_frame);
         }
     }
 
