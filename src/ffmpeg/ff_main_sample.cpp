@@ -6,13 +6,15 @@
 
 using namespace std;
 
-static const char *const FF_URL = "resources/video/sample.flv";
+static const char *const FF_URL = "https://d1--cn-gotcha03.bilivideo.com/live-bvc/199488/live_10867865_7186953_1500.flv?expires=1639739583&len=0&oi=460523204&pt=web&qn=0&trid=10005ee82ea41d1e452e9f6a333a65a67591&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=fd95e0dd990d8d74d07c6a034f57baeb&p2p_type=1&src=5&sl=1&free_type=0&flowtype=1&machinezone=ylf&sk=3a420908fce81ecdbf52dc207cf66dcc&source=onetier&order=1";
+
+static void print_sample_format(AVFrame *pFrame);
 
 FFMainSample::~FFMainSample() {
 
 }
 
-FFMainSample::FFMainSample(SDLImagePlayer *p, SDLAudioPlayer *audioPlayer) {
+FFMainSample::FFMainSample(SDLImagePlayer *p, SDLAudioStreamPlayer *audioPlayer) {
     player = p;
     audio_player = audioPlayer;
 }
@@ -163,12 +165,29 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
 
     AVPacket *av_packet = av_packet_alloc();
     AVFrame *av_frame = av_frame_alloc();
+    AVFrame *pcm_frame = av_frame_alloc();
+
+    AVSampleFormat out_sample_format = AV_SAMPLE_FMT_S16;
+
+    AVSampleFormat audio_sample_format = static_cast<AVSampleFormat>(audio_stream->codecpar->format);
+    SwrContext *swr_context = swr_alloc_set_opts(nullptr, AV_CH_LAYOUT_STEREO, out_sample_format,
+                                                 codec_context->sample_rate,
+                                                 codec_context->channel_layout, audio_sample_format,
+                                                 codec_context->sample_rate,0 ,nullptr);
+    ret = swr_init(swr_context);
+    if (ret < 0) {
+        cerr << "init swr context failed. error code :" << ret << endl;
+        return;
+    }
 
     //一个采样点所占的字节数
     cout << "audio sample fmt:" << codec_context->sample_fmt << endl;
-    //8: AV_SAMPLE_FMT_FLTP
-    uint8_t one_byte_size = av_get_bytes_per_sample(codec_context->sample_fmt);
-    uint32_t buffer_size;
+    int buffer_size;
+    bool opened = false;
+    buffer_size = av_samples_get_buffer_size(NULL, codec_context->channels, 2048,
+                                             out_sample_format, 1);
+    uint8_t * output_buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
+    memset(output_buffer, 0, buffer_size);
     while (av_read_frame(format_context, av_packet) >= 0) {
         if (av_packet->stream_index != audio_stream_index) {
             continue;
@@ -182,45 +201,49 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
 
         while(ret >= 0) {
             ret = avcodec_receive_frame(codec_context, av_frame);
+
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                 //receive frame end
                 break;
             }
 
-            //一帧数据的大小(表示有nb_samples的数据) = channels * nb_samples * format所占字节
-            buffer_size = av_samples_get_buffer_size(av_frame->linesize, av_frame->channels, av_frame->nb_samples,
-                                                     static_cast<AVSampleFormat>(av_frame->format), 1);
+            if (!opened) {
+                audio_player->openAudioDevice(audio_stream->codecpar->format,
+                                              av_frame->nb_samples, av_frame->sample_rate, av_frame->channels);
+                opened = true;
+            }
 
-            clog << "buffer size:" << av_frame->channels << endl;
-            //左声道
-            uint8_t *sample_buffer_l = av_frame->extended_data[0];
-            //右声道
-            uint8_t *sample_buffer_r = av_frame->extended_data[1];
 
-            uint8_t *pcm_buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
             //根据音频格式进行数据的转换
             if (av_frame->format == AV_SAMPLE_FMT_FLTP) { //32位float,little endian
-                //L L R R L L R R
-                for (int i = 0, j=0; i < buffer_size; i+=8, j+=4) {
-                    pcm_buffer[i] = sample_buffer_l[j];
-                    pcm_buffer[i+1] = sample_buffer_l[j+1];
-                    pcm_buffer[i+2] = sample_buffer_r[j+2];
-                    pcm_buffer[i+3] = sample_buffer_r[j+3];
+                //一帧数据的大小(表示有nb_samples的数据) = channels * nb_samples * format所占字节
+                buffer_size = av_samples_get_buffer_size(NULL, av_frame->channels, av_frame->nb_samples,
+                                                         out_sample_format, 1);
 
-                    i+=4;
-                    pcm_buffer[i] = sample_buffer_r[j];
-                    pcm_buffer[i+1] = sample_buffer_r[j+1];
-                    pcm_buffer[i+2] = sample_buffer_r[j+2];
-                    pcm_buffer[i+3] = sample_buffer_r[j+3];
+                int samples = swr_convert(swr_context, &output_buffer, av_frame->nb_samples,
+                                      (const uint8_t **)av_frame->extended_data, av_frame->nb_samples);
+                if (samples <= 0) {
+                    cerr << "convert audio info failed." << endl;
+                    break;
                 }
-
                 //pcm_buffer to play
+                audio_player->updateAudioData(output_buffer, buffer_size);
+
+                av_frame_unref(av_frame);
             }
         }
     }
 
     avcodec_close(codec_context);
 }
+
+static void print_sample_format(AVFrame *frame) {
+    printf("ar-samplerate: %uHz\n", frame->sample_rate);
+    printf("ac-channel: %u\n", frame->channels);
+    printf("f-format: %u\n", frame->format);// 格式需要注意，实际存储到本地文件时已经改成交错模式
+}
+
+
 
 // AVFrame To YUV
 //            uint8_t *yuv_buffer;

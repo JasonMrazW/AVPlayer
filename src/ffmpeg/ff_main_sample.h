@@ -10,19 +10,21 @@ extern "C" {
     #include <libavutil/avutil.h>
     #include <libavutil/imgutils.h>
     #include <libswscale/swscale.h>
+#include <libswresample/swresample.h>
 };
 #include <iostream>
 #include "../parser/header/IImageParser.h"
 #include "../parser/header/YUVImageParser.h"
 #include "../player/SDLImagePlayer.hpp"
-#include "../player/SDLAudioPlayer.h"
+#include "../player/SDLAudioStreamPlayer.h"
+#include <thread>
 
 class FFMainSample {
 private:
     SDLImagePlayer *player;
-    SDLAudioPlayer *audio_player;
+    SDLAudioStreamPlayer *audio_player;
 public:
-    FFMainSample(SDLImagePlayer *player, SDLAudioPlayer *audioPlayer);
+    FFMainSample(SDLImagePlayer *player, SDLAudioStreamPlayer *audioPlayer);
     ~FFMainSample();
 
     void initContext();

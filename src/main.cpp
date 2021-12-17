@@ -4,7 +4,7 @@
 #include "player/SDLImagePlayer.hpp"
 #include "parser/header/YUVImageParser.h"
 #include "parser/header/RGBImageParser.h"
-#include "player/SDLAudioPlayer.h"
+#include "player/SDLAudioStreamPlayer.h"
 #include "parser/header/H264Parser.h"
 #include "parser/header/AACParser.h"
 #include "parser/header/FLVParaser.h"
@@ -43,10 +43,16 @@ std::thread startClient() {
     });
 }
 
-void loadFFmpeg(SDLImagePlayer &player, SDLAudioPlayer &audioPlayer) {
+void loadAudioPlayer(SDLAudioStreamPlayer &audioPlayer) {
+    audioPlayer.startAudioPlayer();
+}
+
+void loadFFmpeg(SDLImagePlayer &player, SDLAudioStreamPlayer &audioPlayer) {
     FFMainSample mainSample(&player, &audioPlayer);
     mainSample.initContext();
 }
+
+
 
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
@@ -55,25 +61,24 @@ int main() {
     IImageParser *parser = new YUVImageParser();
     parser->init();
 
-    SDLAudioPlayer audioPlayer;
-    audioPlayer.play();
+    SDLAudioStreamPlayer audioPlayer;
 
-    loadFFmpeg(player, audioPlayer);
-//    std::thread thread(loadFFmpeg,std::ref(player));
-//    std::clog << "address after:" << &player << endl;
-//
-//
-//    player.OnExecute(parser);
-//
-//    thread.join();
+//    loadFFmpeg(player, audioPlayer);
+//    std::thread audio_thread(loadAudioPlayer, std::ref(audioPlayer));
+std::thread thread(loadFFmpeg, std::ref(player), std::ref(audioPlayer));
+
+    audioPlayer.startAudioPlayer();
+    //player.OnExecute(parser);
+//    ffmpeg_thread.join();
+//    audio_thread.join();
 
     //registerSignal();
 //    createThreadsByPThead();
 //    std::clog << "main program exit2" << std::endl;
 //    createThread();
 
-//    std::thread server_thread = startServer();
-//    std::thread client_thread = startClient();
+//    std::ffmpeg_thread server_thread = startServer();
+//    std::ffmpeg_thread client_thread = startClient();
 //
 //    client_thread.join();
 //    server->stop();
