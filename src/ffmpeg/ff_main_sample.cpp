@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static const char *const FF_URL = "https://d1--cn-gotcha03.bilivideo.com/live-bvc/295559/live_10867865_7186953.flv?expires=1639744333&len=0&oi=3030954244&pt=web&qn=10000&trid=1000117297ba3f894e2b9ba3672aecdd107c&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=9e6691a7823b4b301a50f2051189e591&p2p_type=1&src=5&sl=1&free_type=0&flowtype=1&machinezone=jd&sk=3a420908fce81ecdbf52dc207cf66dcc&source=onetier&order=1";
+static const char *const FF_URL = "https://d1--cn-gotcha03.bilivideo.com/live-bvc/359198/live_10867865_7186953_1500.flv?expires=1639753798&len=0&oi=1961471297&pt=web&qn=0&trid=10009521f6b9b14941a6a87edb8564e25943&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=351f8b3ea64aecbfb5dd32c435ee9639&p2p_type=1&src=5&sl=1&free_type=0&flowtype=1&machinezone=ylf&sk=2935686d6cb9146c7a6a6a0b4e120e2594e074fa0760377f1a7a2b2fa0ee6443&source=onetier&order=1";
 
 static void print_sample_format(AVFrame *pFrame);
 
