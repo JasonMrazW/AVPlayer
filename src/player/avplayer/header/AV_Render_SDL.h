@@ -9,7 +9,7 @@
 #include "SDL.h"
 #include "SDL_events.h"
 #include "AV_Render_Audio.h"
-#include "AV_IAVRender.h"
+#include "AV_Render_Interface.h"
 #include "AV_Render_Video.h"
 
 #define SDL_USER_EVENT_CREATE_WINDOW_DISPLAY 0x01

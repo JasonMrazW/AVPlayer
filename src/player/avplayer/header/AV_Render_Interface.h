@@ -2,8 +2,8 @@
 // Created by bo on 2021/12/20.
 //
 
-#ifndef AVPLAYER_AV_IAVRENDER_H
-#define AVPLAYER_AV_IAVRENDER_H
+#ifndef AVPLAYER_AV_RENDER_INTERFACE_H
+#define AVPLAYER_AV_RENDER_INTERFACE_H
 #include <iostream>
 #include "SDL.h"
 class IAVRender {
@@ -24,4 +24,4 @@ public:
     virtual bool onStop() = 0;
     virtual bool onDestroy() = 0;
 };
-#endif //AVPLAYER_AV_IAVRENDER_H
+#endif //AVPLAYER_AV_RENDER_INTERFACE_H

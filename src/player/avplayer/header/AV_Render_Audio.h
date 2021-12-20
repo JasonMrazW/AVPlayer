@@ -4,7 +4,7 @@
 
 #ifndef AVPLAYER_AV_RENDER_AUDIO_H
 #define AVPLAYER_AV_RENDER_AUDIO_H
-#include "AV_IAVRender.h"
+#include "AV_Render_Interface.h"
 #include "SDL.h"
 
 typedef struct Audio_Render_Parameters {

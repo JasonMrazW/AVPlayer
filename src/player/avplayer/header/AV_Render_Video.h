@@ -4,7 +4,7 @@
 
 #ifndef AVPLAYER_AV_RENDER_VIDEO_H
 #define AVPLAYER_AV_RENDER_VIDEO_H
-#include "AV_IAVRender.h"
+#include "AV_Render_Interface.h"
 typedef struct Video_Render_Parameters {
     uint8_t *data; // 文件二进制内容
     int width; //分辨率宽
