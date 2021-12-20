@@ -2,8 +2,8 @@
 // Created by bo on 2021/12/20.
 //
 
-#ifndef AVPLAYER_AV_VIDEORENDER_H
-#define AVPLAYER_AV_VIDEORENDER_H
+#ifndef AVPLAYER_AV_RENDER_VIDEO_H
+#define AVPLAYER_AV_RENDER_VIDEO_H
 #include "AV_IAVRender.h"
 typedef struct Video_Render_Parameters {
     uint8_t *data; // 文件二进制内容
@@ -13,12 +13,12 @@ typedef struct Video_Render_Parameters {
     int pin;
 }VideoRenderParameters;
 
-class AV_VideoRender : public IAVRender{
+class AV_Render_Video : public IAVRender{
 public:
-    AV_VideoRender() {
+    AV_Render_Video() {
 
     }
-    ~AV_VideoRender() {
+    ~AV_Render_Video() {
         onDestroy();
     }
 
@@ -50,4 +50,4 @@ private:
 };
 
 
-#endif //AVPLAYER_AV_VIDEORENDER_H
+#endif //AVPLAYER_AV_RENDER_VIDEO_H

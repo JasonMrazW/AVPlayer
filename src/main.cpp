@@ -16,7 +16,7 @@
 #include "io/socket_udp_client.h"
 #include "io/socket_udp_server.h"
 #include "ffmpeg/ff_main_sample.h"
-#include "player/avplayer/header/AV_SDLRender.h"
+#include "player/avplayer/header/AV_Render_SDL.h"
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -59,7 +59,7 @@ int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
     //start sdl render
-    AV_SDLRender render;
+    AV_Render_SDL render;
     render.start();
 
     //start image player

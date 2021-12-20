@@ -2,8 +2,8 @@
 // Created by bo on 2021/12/20.
 //
 
-#ifndef AVPLAYER_AV_AUDIORENDER_H
-#define AVPLAYER_AV_AUDIORENDER_H
+#ifndef AVPLAYER_AV_RENDER_AUDIO_H
+#define AVPLAYER_AV_RENDER_AUDIO_H
 #include "AV_IAVRender.h"
 #include "SDL.h"
 
@@ -14,10 +14,10 @@ typedef struct Audio_Render_Parameters {
     uint8_t channels;
 }AudioRenderParameters;
 
-class AV_AudioRender : public IAVRender{
+class AV_Render_Audio : public IAVRender{
 public:
-    AV_AudioRender();
-    ~AV_AudioRender();
+    AV_Render_Audio();
+    ~AV_Render_Audio();
 
     bool init() override;
     bool onUpdate() override{
@@ -49,4 +49,4 @@ private:
 };
 
 
-#endif //AVPLAYER_AV_AUDIORENDER_H
+#endif //AVPLAYER_AV_RENDER_AUDIO_H

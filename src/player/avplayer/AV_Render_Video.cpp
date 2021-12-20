@@ -2,9 +2,9 @@
 // Created by bo on 2021/12/20.
 //
 
-#include "header/AV_VideoRender.h"
+#include "header/AV_Render_Video.h"
 
-bool AV_VideoRender::init() {
+bool AV_Render_Video::init() {
     window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window != nullptr) {
@@ -13,11 +13,11 @@ bool AV_VideoRender::init() {
     return true;
 }
 
-bool AV_VideoRender::onUpdate() {
+bool AV_Render_Video::onUpdate() {
     return false;
 }
 
-bool AV_VideoRender::onRender() {
+bool AV_Render_Video::onRender() {
     if (current_yuv_data == nullptr) return false;
 
     SDL_UpdateTexture(texture, nullptr, current_yuv_data, current_pin);
@@ -30,14 +30,14 @@ bool AV_VideoRender::onRender() {
     return true;
 }
 
-bool AV_VideoRender::onStop() {
+bool AV_Render_Video::onStop() {
     if (texture != nullptr) {
         SDL_DestroyTexture(texture);
     }
     return true;
 }
 
-bool AV_VideoRender::onDestroy() {
+bool AV_Render_Video::onDestroy() {
     if (current_yuv_data != nullptr) {
         delete current_yuv_data;
     }
@@ -45,7 +45,7 @@ bool AV_VideoRender::onDestroy() {
     return true;
 }
 
-bool AV_VideoRender::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
+bool AV_Render_Video::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
     if (texture != nullptr) {
         SDL_DestroyTexture(texture);
     }

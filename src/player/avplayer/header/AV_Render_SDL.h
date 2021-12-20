@@ -2,25 +2,25 @@
 // Created by bo on 2021/12/20.
 //
 
-#ifndef AVPLAYER_AV_SDLRENDER_H
-#define AVPLAYER_AV_SDLRENDER_H
+#ifndef AVPLAYER_AV_RENDER_SDL_H
+#define AVPLAYER_AV_RENDER_SDL_H
 #include <iostream>
 
 #include "SDL.h"
 #include "SDL_events.h"
-#include "AV_AudioRender.h"
+#include "AV_Render_Audio.h"
 #include "AV_IAVRender.h"
-#include "AV_VideoRender.h"
+#include "AV_Render_Video.h"
 
 #define SDL_USER_EVENT_CREATE_WINDOW_DISPLAY 0x01
 #define SDL_USER_EVENT_CREATE_TEXTURE 0x02
 #define SDL_USER_EVENT_OPEN_AUDIO_DEVICE 0x03
 #define SDL_USER_EVENT_ON_FRAME_AVAILABLE 0x04
 
-class AV_SDLRender {
+class AV_Render_SDL {
 public:
-    AV_SDLRender();
-    ~AV_SDLRender();
+    AV_Render_SDL();
+    ~AV_Render_SDL();
 
     void start();
 
@@ -51,4 +51,4 @@ private:
     bool onDestroy();
 };
 
-#endif //AVPLAYER_AV_SDLRENDER_H
+#endif //AVPLAYER_AV_RENDER_SDL_H

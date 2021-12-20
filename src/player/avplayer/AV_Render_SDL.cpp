@@ -2,20 +2,20 @@
 // Created by bo on 2021/12/20.
 //
 
-#include "header/AV_SDLRender.h"
+#include "header/AV_Render_SDL.h"
 
 using namespace std;
 
-AV_SDLRender::AV_SDLRender() {
+AV_Render_SDL::AV_Render_SDL() {
 
 }
 
-AV_SDLRender::~AV_SDLRender() {
+AV_Render_SDL::~AV_Render_SDL() {
     onDestroy();
 }
 
 //******************public method******************
-void AV_SDLRender::start() {
+void AV_Render_SDL::start() {
     if (!onInit()) {
         return;
     }
@@ -32,7 +32,7 @@ void AV_SDLRender::start() {
     onStop();
 }
 
-bool AV_SDLRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
+bool AV_Render_SDL::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
     AudioRenderParameters parameters;
     parameters.audio_format = audio_format;
     parameters.nb_samples = nb_samples;
@@ -42,7 +42,7 @@ bool AV_SDLRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_sam
     return true;
 }
 
-bool AV_SDLRender::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
+bool AV_Render_SDL::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
     VideoRenderParameters parameters;
     parameters.data = data;
     parameters.width = width;
@@ -54,16 +54,16 @@ bool AV_SDLRender::openVideoDevice(uint8_t *data, int width, int height, Uint32 
     return true;
 }
 
-Uint32 AV_SDLRender::SDL_TimerCallback(Uint32 interval, void *param) {
+Uint32 AV_Render_SDL::SDL_TimerCallback(Uint32 interval, void *param) {
 
-    AV_SDLRender *sdl_render = static_cast<AV_SDLRender *>(param);
+    AV_Render_SDL *sdl_render = static_cast<AV_Render_SDL *>(param);
     sdl_render->sendEvent(SDL_USER_EVENT_ON_FRAME_AVAILABLE, nullptr);
 
 
     return (interval);
 }
 
-void AV_SDLRender::sendEvent(uint32_t event_type, void *data) {
+void AV_Render_SDL::sendEvent(uint32_t event_type, void *data) {
 
     Uint32 myEventType = SDL_RegisterEvents(1);
     if (myEventType != ((Uint32) -1)) {
@@ -78,7 +78,7 @@ void AV_SDLRender::sendEvent(uint32_t event_type, void *data) {
 }
 
 //******************private method******************
-bool AV_SDLRender::onInit() {
+bool AV_Render_SDL::onInit() {
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         cerr << "init sdl failed." << strerror(errno) << endl;
         return false;
@@ -87,12 +87,12 @@ bool AV_SDLRender::onInit() {
     timerId = SDL_AddTimer(TIME_INTERVAL, &SDL_TimerCallback, this);
 
     //初始化Video和Audio
-    audio_render = new AV_AudioRender();
-    video_render = new AV_VideoRender();
+    audio_render = new AV_Render_Audio();
+    video_render = new AV_Render_Video();
     return true;
 }
 
-bool AV_SDLRender::onEvent(SDL_Event *sdlEvent) {
+bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
 
     if (sdlEvent->type >= SDL_USEREVENT) {
         SDL_UserEvent userEvent = sdlEvent->user;
@@ -134,7 +134,7 @@ bool AV_SDLRender::onEvent(SDL_Event *sdlEvent) {
     return false;
 }
 
-bool AV_SDLRender::onStop() {
+bool AV_Render_SDL::onStop() {
     audio_render->onStop();
     video_render->onStop();
 
@@ -144,11 +144,11 @@ bool AV_SDLRender::onStop() {
     return true;
 }
 
-bool AV_SDLRender::onDestroy() {
+bool AV_Render_SDL::onDestroy() {
     return true;
 }
 
 //控制视频的帧率
-bool AV_SDLRender::onRender() {
+bool AV_Render_SDL::onRender() {
     return video_render->onRender();
 }

@@ -2,36 +2,36 @@
 // Created by bo on 2021/12/20.
 //
 
-#include "header/AV_AudioRender.h"
+#include "header/AV_Render_Audio.h"
 using namespace std;
 
 
-AV_AudioRender::AV_AudioRender() {
+AV_Render_Audio::AV_Render_Audio() {
 
 }
 
-AV_AudioRender::~AV_AudioRender() {
+AV_Render_Audio::~AV_Render_Audio() {
     onDestroy();
 }
 
-bool AV_AudioRender::init() {
+bool AV_Render_Audio::init() {
     return false;
 }
 
-bool AV_AudioRender::onStop() {
+bool AV_Render_Audio::onStop() {
     if (audioDeviceId != 0) {
         SDL_CloseAudioDevice(audioDeviceId);
     }
     return true;
 }
 
-bool AV_AudioRender::onDestroy() {
+bool AV_Render_Audio::onDestroy() {
     delete audioSpec;
     delete audio_pos;
     return true;
 }
 
-bool AV_AudioRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
+bool AV_Render_Audio::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
     onStop();
     //init audio info
     audioFormat = audio_format;
@@ -52,10 +52,10 @@ bool AV_AudioRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_s
 }
 
 //音频设备的回调
-void AV_AudioRender::fillDataCallBack(void *userdata, uint8_t * stream, int len) {
+void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len) {
     SDL_memset(stream, 0, len);
 
-    AV_AudioRender *render = static_cast<AV_AudioRender *>(userdata);
+    AV_Render_Audio *render = static_cast<AV_Render_Audio *>(userdata);
 
     len = len > render->audio_length.value ? render->audio_length.value : len;
     std::cout << "playing audio data length:" << len << std::endl;
