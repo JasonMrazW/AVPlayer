@@ -16,6 +16,7 @@
 #include "io/socket_udp_client.h"
 #include "io/socket_udp_server.h"
 #include "ffmpeg/ff_main_sample.h"
+#include "player/avplayer/header/AV_SDLRender.h"
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -57,17 +58,22 @@ void loadFFmpeg(SDLImagePlayer &player, SDLAudioStreamPlayer &audioPlayer) {
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
-    SDLImagePlayer player;
-    IImageParser *parser = new YUVImageParser();
-    parser->init();
+    //start sdl render
+    AV_SDLRender render;
+    render.start();
 
-    SDLAudioStreamPlayer audioPlayer;
+    //start image player
+//    SDLImagePlayer player;
+//    IImageParser *parser = new YUVImageParser();
+//    parser->init();
 
+    //start audio player
+//    SDLAudioStreamPlayer audioPlayer;
+//    std::thread thread(loadFFmpeg, std::ref(player), std::ref(audioPlayer));
+//    audioPlayer.startAudioPlayer();
 //    loadFFmpeg(player, audioPlayer);
 //    std::thread audio_thread(loadAudioPlayer, std::ref(audioPlayer));
-std::thread thread(loadFFmpeg, std::ref(player), std::ref(audioPlayer));
 
-    audioPlayer.startAudioPlayer();
     //player.OnExecute(parser);
 //    ffmpeg_thread.join();
 //    audio_thread.join();
