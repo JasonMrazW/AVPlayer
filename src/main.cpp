@@ -17,6 +17,7 @@
 #include "io/socket_udp_server.h"
 #include "ffmpeg/ff_main_sample.h"
 #include "player/avplayer/header/AV_Render_SDL.h"
+#include "player/avplayer/header/AV_Demuxer.h"
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -59,8 +60,11 @@ int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
     //start sdl render
-    AV_Render_SDL render;
-    render.start();
+//    AV_Render_SDL render;
+//    render.start();
+
+    AVDemuxer demuxer;
+    demuxer.init("resources/video/sample.flv");
 
     //start image player
 //    SDLImagePlayer player;
