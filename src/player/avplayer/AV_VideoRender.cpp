@@ -18,6 +18,8 @@ bool AV_VideoRender::onUpdate() {
 }
 
 bool AV_VideoRender::onRender() {
+    if (current_yuv_data == nullptr) return false;
+
     SDL_UpdateTexture(texture, nullptr, current_yuv_data, current_pin);
 
     SDL_RenderClear(renderer);

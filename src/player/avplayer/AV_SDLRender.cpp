@@ -22,8 +22,9 @@ void AV_SDLRender::start() {
     running = true;
 
     SDL_Event event;
-    while(running) {
-        if (SDL_PollEvent(&event)) {
+    int ret = 0;
+    while (running) {
+        while (SDL_PollEvent(&event)) {
             onEvent(&event);
         }
     }
@@ -38,7 +39,7 @@ bool AV_SDLRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_sam
     parameters.channels = channels;
 
     sendEvent(SDL_USER_EVENT_OPEN_AUDIO_DEVICE, &parameters);
-    return  true;
+    return true;
 }
 
 bool AV_SDLRender::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
@@ -50,24 +51,32 @@ bool AV_SDLRender::openVideoDevice(uint8_t *data, int width, int height, Uint32 
     parameters.pin = pin;
 
     sendEvent(SDL_USER_EVENT_CREATE_TEXTURE, &parameters);
-    return  true;
+    return true;
 }
 
 Uint32 AV_SDLRender::SDL_TimerCallback(Uint32 interval, void *param) {
+
     AV_SDLRender *sdl_render = static_cast<AV_SDLRender *>(param);
     sdl_render->sendEvent(SDL_USER_EVENT_ON_FRAME_AVAILABLE, nullptr);
+
+
     return (interval);
 }
 
 void AV_SDLRender::sendEvent(uint32_t event_type, void *data) {
-    SDL_Event event;
-    event.type = event_type;
 
-    SDL_UserEvent userEvent;
-    userEvent.data1 = data;
-    event.user = userEvent;
-    SDL_PushEvent(&event);
+    Uint32 myEventType = SDL_RegisterEvents(1);
+    if (myEventType != ((Uint32) -1)) {
+        SDL_Event event;
+        SDL_memset(&event, 0, sizeof(event)); /* or SDL_zero(event) */
+        event.type = myEventType;
+        event.user.code = event_type;
+        event.user.data1 = data;
+        event.user.data2 = 0;
+        SDL_PushEvent(&event);
+    }
 }
+
 //******************private method******************
 bool AV_SDLRender::onInit() {
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -84,34 +93,44 @@ bool AV_SDLRender::onInit() {
 }
 
 bool AV_SDLRender::onEvent(SDL_Event *sdlEvent) {
-    clog << "receive sdl event:" << sdlEvent->type << endl;
-    switch (sdlEvent->type) {
-        case SDL_QUIT:
-            running = false;
-            break;
-        case SDL_KEYDOWN:
-            if (sdlEvent->key.keysym.sym == SDLK_ESCAPE) {
+
+    if (sdlEvent->type >= SDL_USEREVENT) {
+        SDL_UserEvent userEvent = sdlEvent->user;
+        switch (userEvent.code) {
+            case SDL_USER_EVENT_CREATE_WINDOW_DISPLAY:
+                //初始化SDL渲染相关组件
+                video_render->init();
+                break;
+            case SDL_USER_EVENT_CREATE_TEXTURE:
+                //根据要播放的视频信息，创建Texture
+                video_render->openDevice(userEvent.data1);
+                break;
+            case SDL_USER_EVENT_OPEN_AUDIO_DEVICE:
+                //根据要播放的音频信息，打开音频播放设备
+                audio_render->openDevice(userEvent.data1);
+                break;
+            case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
+                cout << "on frame available." << endl;
+                onRender();
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch (sdlEvent->type) {
+            case SDL_QUIT:
                 running = false;
-            }
-            break;
-        case SDL_USER_EVENT_CREATE_WINDOW_DISPLAY:
-            //初始化SDL渲染相关组件
-            video_render->init();
-            break;
-        case SDL_USER_EVENT_CREATE_TEXTURE:
-            //根据要播放的视频信息，创建Texture
-            video_render->openDevice(sdlEvent->user.data1);
-            break;
-        case SDL_USER_EVENT_OPEN_AUDIO_DEVICE:
-            //根据要播放的音频信息，打开音频播放设备
-            audio_render->openDevice(sdlEvent->user.data1);
-            break;
-        case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
-            onRender();
-            break;
-        default:
-            break;
+                break;
+            case SDL_KEYDOWN:
+                if (sdlEvent->key.keysym.sym == SDLK_ESCAPE) {
+                    running = false;
+                }
+                break;
+            default:
+                break;
+        }
     }
+
     return false;
 }
 

@@ -43,8 +43,8 @@ private:
     const int SCREEN_WIDTH     = 900;
     const int SCREEN_HEIGHT    = 600;
 
-    uint8_t *current_yuv_data;
-    int current_pin;
+    uint8_t *current_yuv_data = nullptr;
+    int current_pin = 0;
 
     bool openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin);
 };
