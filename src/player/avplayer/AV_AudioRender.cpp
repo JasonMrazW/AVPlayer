@@ -3,3 +3,65 @@
 //
 
 #include "header/AV_AudioRender.h"
+using namespace std;
+
+
+AV_AudioRender::AV_AudioRender() {
+
+}
+
+AV_AudioRender::~AV_AudioRender() {
+    onDestroy();
+}
+
+bool AV_AudioRender::init() {
+    return false;
+}
+
+bool AV_AudioRender::onStop() {
+    if (audioDeviceId != 0) {
+        SDL_CloseAudioDevice(audioDeviceId);
+    }
+    return true;
+}
+
+bool AV_AudioRender::onDestroy() {
+    delete audioSpec;
+    delete audio_pos;
+    return true;
+}
+
+bool AV_AudioRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
+    onStop();
+    //init audio info
+    audioFormat = audio_format;
+    audioSpec = new SDL_AudioSpec();
+    audioSpec->samples = nb_samples;
+    audioSpec->freq = freq;
+    audioSpec->format = audio_format;
+    audioSpec->channels = channels;
+    audioSpec->silence = 0;
+    audioSpec->callback = &fillDataCallBack;
+    audioSpec->userdata = this;
+
+    if ((audioDeviceId = SDL_OpenAudioDevice(nullptr,0,audioSpec,nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE)) < 2) {
+        cerr << "SDL_Init Audio Device Failed: " << SDL_GetError() << endl;
+        return false;
+    }
+    SDL_PauseAudioDevice(audioDeviceId, 0);
+}
+
+//音频设备的回调
+void AV_AudioRender::fillDataCallBack(void *userdata, uint8_t * stream, int len) {
+    SDL_memset(stream, 0, len);
+
+    AV_AudioRender *render = static_cast<AV_AudioRender *>(userdata);
+
+    len = len > render->audio_length.value ? render->audio_length.value : len;
+    std::cout << "playing audio data length:" << len << std::endl;
+
+    //混合播放
+    SDL_MixAudioFormat(stream, render->audio_pos, render->audioFormat, len, SDL_MIX_MAXVOLUME);
+    render->audio_pos +=len;
+    render->audio_length.value -=len;
+}

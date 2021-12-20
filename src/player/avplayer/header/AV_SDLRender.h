@@ -8,21 +8,14 @@
 
 #include "SDL.h"
 #include "SDL_events.h"
+#include "AV_AudioRender.h"
+#include "AV_IAVRender.h"
+#include "AV_VideoRender.h"
 
 #define SDL_USER_EVENT_CREATE_WINDOW_DISPLAY SDL_USEREVENT + 1
 #define SDL_USER_EVENT_CREATE_TEXTURE SDL_USEREVENT + 2
 #define SDL_USER_EVENT_OPEN_AUDIO_DEVICE SDL_USEREVENT + 3
 #define SDL_USER_EVENT_ON_FRAME_AVAILABLE SDL_USEREVENT + 4
-
-class IAVRender {
-public:
-    virtual bool init() = 0;
-    virtual bool openDevice() = 0;
-    virtual bool onUpdate() = 0;
-    virtual bool onRender() = 0;
-    virtual bool onStop() = 0;
-    virtual bool onDestroy() = 0;
-};
 
 class AV_SDLRender {
 public:
@@ -31,9 +24,9 @@ public:
 
     void start();
 
-    bool openAudioDevice();
+    bool openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels);
 
-    bool openVideoDevice();
+    bool openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin);
 
     void sendEvent(uint32_t event_type, void *data);
 

@@ -27,14 +27,30 @@ void AV_SDLRender::start() {
             onEvent(&event);
         }
     }
+
+    onStop();
 }
 
-bool AV_SDLRender::openAudioDevice() {
-    return false;
+bool AV_SDLRender::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
+    AudioRenderParameters parameters;
+    parameters.audio_format = audio_format;
+    parameters.nb_samples = nb_samples;
+    parameters.channels = channels;
+
+    sendEvent(SDL_USER_EVENT_OPEN_AUDIO_DEVICE, &parameters);
+    return  true;
 }
 
-bool AV_SDLRender::openVideoDevice() {
-    return false;
+bool AV_SDLRender::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
+    VideoRenderParameters parameters;
+    parameters.data = data;
+    parameters.width = width;
+    parameters.height = height;
+    parameters.format = format;
+    parameters.pin = pin;
+
+    sendEvent(SDL_USER_EVENT_CREATE_TEXTURE, &parameters);
+    return  true;
 }
 
 Uint32 AV_SDLRender::SDL_TimerCallback(Uint32 interval, void *param) {
@@ -60,6 +76,10 @@ bool AV_SDLRender::onInit() {
     }
     //初始化定时器，用于刷新视频帧
     timerId = SDL_AddTimer(TIME_INTERVAL, &SDL_TimerCallback, this);
+
+    //初始化Video和Audio
+    audio_render = new AV_AudioRender();
+    video_render = new AV_VideoRender();
     return true;
 }
 
@@ -80,11 +100,11 @@ bool AV_SDLRender::onEvent(SDL_Event *sdlEvent) {
             break;
         case SDL_USER_EVENT_CREATE_TEXTURE:
             //根据要播放的视频信息，创建Texture
-            video_render->openDevice();
+            video_render->openDevice(sdlEvent->user.data1);
             break;
         case SDL_USER_EVENT_OPEN_AUDIO_DEVICE:
             //根据要播放的音频信息，打开音频播放设备
-            audio_render->openDevice();
+            audio_render->openDevice(sdlEvent->user.data1);
             break;
         case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
             onRender();
@@ -96,12 +116,16 @@ bool AV_SDLRender::onEvent(SDL_Event *sdlEvent) {
 }
 
 bool AV_SDLRender::onStop() {
-    return false;
+    audio_render->onStop();
+    video_render->onStop();
+
+    SDL_RemoveTimer(timerId);
+    SDL_Quit();
+
+    return true;
 }
 
 bool AV_SDLRender::onDestroy() {
-    SDL_RemoveTimer(timerId);
-    SDL_Quit();
     return true;
 }
 
@@ -109,6 +133,3 @@ bool AV_SDLRender::onDestroy() {
 bool AV_SDLRender::onRender() {
     return video_render->onRender();
 }
-
-
-
