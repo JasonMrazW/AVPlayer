@@ -18,6 +18,7 @@
 #include "ffmpeg/ff_main_sample.h"
 #include "player/avplayer/header/AV_Render_SDL.h"
 #include "player/avplayer/header/AV_Demuxer.h"
+#include "thread/ThreadSafeQueue.h"
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -54,7 +55,15 @@ void loadFFmpeg(SDLImagePlayer &player, SDLAudioStreamPlayer &audioPlayer) {
     mainSample.initContext();
 }
 
+void enqueue(uint8_t index, ThreadSafeQueue<int> &queue) {
+    queue.EnQueue(index);
+    std::cout << "enqueue___" << (unsigned )index <<std::endl;
+}
 
+void dequeue(ThreadSafeQueue<int> &queue) {
+    int value = 0;
+    queue.Dequeue(value);
+}
 
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
@@ -63,13 +72,33 @@ int main() {
 //    AV_Render_SDL render;
 //    render.start();
 
-    AVDemuxer demuxer;
-    demuxer.init("resources/video/sample.flv");
+    //AVDemuxer demuxer;
+    //demuxer.start("resources/video/sample.flv");
 
+    ThreadSafeQueue<int> queue(10);
+
+
+    for (uint8_t i = 0; i <= 60; ++i) {
+        std::thread t = thread(std::ref(enqueue), i, std::ref(queue));
+        t.detach();
+    }
+
+    for (uint8_t i = 0; i <= 10; ++i) {
+        std::thread t = thread(std::ref(dequeue),  std::ref(queue));
+        t.detach();
+    }
+
+    std::cerr << (unsigned)queue.size() << std::endl;
+
+    int j = 0;
+    while(j < 100000) {
+        std::this_thread::sleep_for(std::chrono::milliseconds (100));
+        j++;
+    }
     //start image player
 //    SDLImagePlayer player;
 //    IImageParser *parser = new YUVImageParser();
-//    parser->init();
+//    parser->start();
 
     //start audio player
 //    SDLAudioStreamPlayer audioPlayer;
@@ -107,10 +136,10 @@ int main() {
 //    parser.loadFromFile();
 
 //    AACParser aacParser;
-//    aacParser.init();
+//    aacParser.start();
 
 //    FLVParaser flv_parser;
-//    FLVParaser::init();
+//    FLVParaser::start();
 
 //    uint8_t *temp = new uint8_t [3];
 //    //0001e2

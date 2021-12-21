@@ -5,60 +5,53 @@
 #include "header/AV_Demuxer.h"
 using namespace std;
 
-void AVDemuxer::init(const char * url) {
-    AVFormatContext *format_context = nullptr;
-    AVDictionary *dic = nullptr;
-    int ret = avformat_open_input(&format_context, url, nullptr, &dic);
+void AVDemuxer::start(const char * url) {
+    current_state = new AVState();
+
+    int ret = avformat_open_input(&current_state->format_context, url, nullptr, nullptr);
     if (ret < 0) {
         cerr << "open file failed. error code :" << errno << " "<< strerror(errno) << endl;
         return;
     }
 
-    ret = avformat_find_stream_info(format_context, &dic);
+    ret = avformat_find_stream_info(current_state->format_context, nullptr);
     if (ret < 0) {
         cerr << "find stream info failed. error code :" << errno << " "<< strerror(errno) << endl;
         return;
     }
-    av_dump_format(format_context, 0, nullptr, 0);
+    av_dump_format(current_state->format_context, 0, nullptr, 0);
 
     //find video stream index and audio stream index
-    AVStream *video_stream = nullptr;
-    AVStream *audio_stream = nullptr;
-    uint8_t video_stream_index = -1;
-    uint8_t audio_stream_index = -1;
 
-    for (int i = 0; i < format_context->nb_streams; ++i) {
-        switch (format_context->streams[i]->codecpar->codec_type) {
+    for (int i = 0; i < current_state->format_context->nb_streams; ++i) {
+        switch (current_state->format_context->streams[i]->codecpar->codec_type) {
             case AVMEDIA_TYPE_VIDEO:
-                video_stream = format_context->streams[i];
-                video_stream_index = i;
+                current_state->video_stream = current_state->format_context->streams[i];
+                current_state->video_stream_index = i;
                 break;
             case AVMEDIA_TYPE_AUDIO:
-                audio_stream = format_context->streams[i];
-                audio_stream_index = i;
+                current_state->audio_stream = current_state->format_context->streams[i];
+                current_state->audio_stream_index = i;
                 break;
             default:
                 continue;
         }
     }
 
-    //init video codec
+    //start video codec
+    initCodec(current_state->video_stream, &current_state->video_codec, &current_state->video_codecContext);
 
-    AVCodec *video_codec = nullptr;
-    AVCodecContext *video_codecContext = nullptr;
-    initCodec(video_stream, &video_codec, &video_codecContext);
-
-    clog << "id:" << video_codec->id << endl;
-    avformat_close_input(&format_context);
+    clog << "id:" << current_state->video_codec->id << endl;
 }
 
 bool AVDemuxer::initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecContext **out_codecContext) {
     AVCodec *temp_codec= avcodec_find_decoder(video_stream->codecpar->codec_id);
-    *out_codec = temp_codec;
-    if (out_codec == nullptr) {
-        cerr << "init codec failed." << strerror(errno) << endl;
+    if (temp_codec == nullptr) {
+        cerr << "start codec failed." << strerror(errno) << endl;
         return false;
     }
+    *out_codec = temp_codec;
+
 
     AVCodecContext *temp_context = avcodec_alloc_context3(temp_codec);
     *out_codecContext = temp_context;
@@ -72,6 +65,15 @@ bool AVDemuxer::initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecCo
     return true;
 }
 
-void AVDemuxer::close() {
+void readAVPackets(AVFormatContext *formatContext) {
+    AVPacket *avPacket = av_packet_alloc();
+    while(av_read_frame(formatContext, avPacket)) {
 
+    }
+
+    //close()
+}
+
+void AVDemuxer::close(AVFormatContext *formatContext) {
+    avformat_close_input(&formatContext);
 }

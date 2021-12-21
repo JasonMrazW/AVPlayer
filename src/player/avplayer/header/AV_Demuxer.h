@@ -17,14 +17,30 @@ extern "C" {
 class AVDemuxer {
 public:
     AVDemuxer() {};
-    ~AVDemuxer() {};
+    ~AVDemuxer() {
 
-    void init(const char * url);
+    };
+
+    void start(const char * url);
 
 private:
+    struct AVState {
+        AVFormatContext *format_context = nullptr;
+
+        AVStream *video_stream = nullptr;
+        AVStream *audio_stream = nullptr;
+        uint8_t video_stream_index = -1;
+        uint8_t audio_stream_index = -1;
+
+        AVCodec *video_codec = nullptr;
+        AVCodecContext *video_codecContext = nullptr;
+    };
+
+    AVState *current_state;
+
     bool initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecContext **out_codecContext);
 
-    void close();
+    void close(AVFormatContext *formatContext);
 };
 
 

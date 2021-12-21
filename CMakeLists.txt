@@ -4,7 +4,6 @@ project(AVPlayer)
 # ------- Set Vars ------- #
 
 
-
 # require C++11
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -26,10 +25,10 @@ set(SOURCE_FILES
         src/io/AVFileUtil.cpp
         src/io/AVFileUtil.h
         src/parser/H264Parser.cpp
-        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h src/parser/header/FLVAMFInfo.h src/parser/header/FLVVideoTag.h src/parser/header/FLVAudioTag.h src/basic/basic.cpp src/basic/basic.h src/io/socket_server.cpp src/io/socket_server.h src/io/socket_client.cpp src/io/socket_client.h src/io/socket_tcp_server.cpp src/io/socket_tcp_server.h src/io/socket_udp_server.cpp src/io/socket_udp_server.h src/io/socket_tcp_client.cpp src/io/socket_tcp_client.h src/io/socket_info.h src/io/socket_udp_client.cpp src/io/socket_udp_client.h src/parser/RTPParser.cpp src/parser/header/RTPParser.h src/ffmpeg/ff_main_sample.cpp src/ffmpeg/ff_main_sample.h src/player/SDLAudioStreamPlayer.cpp src/player/SDLAudioStreamPlayer.h src/util/ConvertUtil.cpp src/util/ConvertUtil.h src/player/avplayer/AV_FSDPlayer.cpp src/player/avplayer/header/AV_FSDPlayer.h src/player/avplayer/AV_Render_SDL.cpp src/player/avplayer/header/AV_Render_SDL.h src/player/avplayer/AV_Render_Video.cpp src/player/avplayer/header/AV_Render_Video.h src/player/avplayer/AV_Render_Audio.cpp src/player/avplayer/header/AV_Render_Audio.h src/player/avplayer/header/AV_Render_Interface.h src/player/avplayer/AV_Demuxer.cpp src/player/avplayer/header/AV_Demuxer.h)
+        src/parser/header/H264Parser.h src/parser/AACParser.cpp src/parser/header/AACParser.h src/util/BinaryUtil.cpp src/util/BinaryUtil.h src/parser/FLVParaser.cpp src/parser/header/FLVParaser.h src/parser/header/FLVAMFInfo.h src/parser/header/FLVVideoTag.h src/parser/header/FLVAudioTag.h src/basic/basic.cpp src/basic/basic.h src/io/socket_server.cpp src/io/socket_server.h src/io/socket_client.cpp src/io/socket_client.h src/io/socket_tcp_server.cpp src/io/socket_tcp_server.h src/io/socket_udp_server.cpp src/io/socket_udp_server.h src/io/socket_tcp_client.cpp src/io/socket_tcp_client.h src/io/socket_info.h src/io/socket_udp_client.cpp src/io/socket_udp_client.h src/parser/RTPParser.cpp src/parser/header/RTPParser.h src/ffmpeg/ff_main_sample.cpp src/ffmpeg/ff_main_sample.h src/player/SDLAudioStreamPlayer.cpp src/player/SDLAudioStreamPlayer.h src/util/ConvertUtil.cpp src/util/ConvertUtil.h src/player/avplayer/AV_FSDPlayer.cpp src/player/avplayer/header/AV_FSDPlayer.h src/player/avplayer/AV_Render_SDL.cpp src/player/avplayer/header/AV_Render_SDL.h src/player/avplayer/AV_Render_Video.cpp src/player/avplayer/header/AV_Render_Video.h src/player/avplayer/AV_Render_Audio.cpp src/player/avplayer/header/AV_Render_Audio.h src/player/avplayer/header/AV_Render_Interface.h src/player/avplayer/AV_Demuxer.cpp src/player/avplayer/header/AV_Demuxer.h src/thread/ThreadSafeQueue.h)
 
 Message("   ")
-Message( STATUS "SOURCE entry point : " ${SOURCE_FILES} )
+Message(STATUS "SOURCE entry point : " ${SOURCE_FILES})
 Message("  2323")
 
 # ------- End Set Vars --- #
@@ -73,11 +72,10 @@ target_link_libraries(
         postproc
         swresample
         swscale
-        )
+)
 
 message("${SDL2_INCLUDE_DIRS}")
 message("${SDL2_LIBRARIES}")
-
 
 
 file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -85,9 +83,9 @@ file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # ------- Inc & Link ---- #
 message("-- CMAKE_HOST_SYSTEM_PROCESSOR: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 
-IF(APPLE)
+IF (APPLE)
     if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")
         SET(CMAKE_OSX_ARCHITECTURES "arm64;" CACHE STRING "Build architectures for Mac OS X" FORCE)
     endif ()
-ENDIF(APPLE)
+ENDIF (APPLE)
 # ------- End ----------- #
