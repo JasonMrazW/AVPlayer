@@ -6,7 +6,7 @@
 using namespace std;
 
 void AVDemuxer::start(const char * url) {
-    current_state = new AVState();
+    AVState *current_state = new AVState();
 
     int ret = avformat_open_input(&current_state->format_context, url, nullptr, nullptr);
     if (ret < 0) {
@@ -40,8 +40,20 @@ void AVDemuxer::start(const char * url) {
 
     //start video codec
     initCodec(current_state->video_stream, &current_state->video_codec, &current_state->video_codecContext);
+    //start audio codec
+    initCodec(current_state->audio_stream, &current_state->audio_codec, &current_state->audio_codecContext);
 
     clog << "id:" << current_state->video_codec->id << endl;
+    //1秒25帧数据
+    video_packet_queue = new ThreadSafeQueue<AVPacket>(25);
+    //1秒 44100/1024个帧数据
+    audio_packet_queue = new ThreadSafeQueue<AVPacket>(45);
+    readAVPackets(current_state->format_context, current_state);
+
+    //stop read frame
+    avcodec_close(current_state->video_codecContext);
+    avcodec_close(current_state->audio_codecContext);
+    close(current_state->format_context);
 }
 
 bool AVDemuxer::initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecContext **out_codecContext) {
@@ -65,13 +77,17 @@ bool AVDemuxer::initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecCo
     return true;
 }
 
-void readAVPackets(AVFormatContext *formatContext) {
+void AVDemuxer::readAVPackets(AVFormatContext *formatContext, AVState *state) {
     AVPacket *avPacket = av_packet_alloc();
-    while(av_read_frame(formatContext, avPacket)) {
-
+    while(av_read_frame(formatContext, avPacket) >= 0) {
+        if (avPacket->stream_index == state->video_stream_index) {
+            video_packet_queue->enqueue(*avPacket);
+        } else if(avPacket->stream_index == state->audio_stream_index) {
+            audio_packet_queue->enqueue(*avPacket);
+        } else {
+            // do nothing
+        }
     }
-
-    //close()
 }
 
 void AVDemuxer::close(AVFormatContext *formatContext) {

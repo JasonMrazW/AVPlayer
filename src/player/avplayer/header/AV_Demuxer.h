@@ -13,10 +13,13 @@ extern "C" {
 #include <libswresample/swresample.h>
 };
 #include <iostream>
+#include "../../../thread/ThreadSafeQueue.h"
 
 class AVDemuxer {
 public:
-    AVDemuxer() {};
+    AVDemuxer() {
+
+    };
     ~AVDemuxer() {
 
     };
@@ -34,13 +37,19 @@ private:
 
         AVCodec *video_codec = nullptr;
         AVCodecContext *video_codecContext = nullptr;
+
+        AVCodec *audio_codec = nullptr;
+        AVCodecContext *audio_codecContext = nullptr;
     };
 
-    AVState *current_state;
+    ThreadSafeQueue<AVPacket> *video_packet_queue = nullptr;
+    ThreadSafeQueue<AVPacket> *audio_packet_queue = nullptr;
 
     bool initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecContext **out_codecContext);
 
     void close(AVFormatContext *formatContext);
+
+    void readAVPackets(AVFormatContext *formatContext, AVState *state);
 };
 
 

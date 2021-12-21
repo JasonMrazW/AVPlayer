@@ -20,10 +20,10 @@ public:
     ThreadSafeQueue(uint8_t maxSize) : current_size(0), max_size(maxSize) {
     }
 
-    size_t size() { return current_size; }
+    size_t size() { return m_container.size(); }
 
 
-    void EnQueue(T item) {
+    void enqueue(T item) {
         std::unique_lock<std::mutex> lock(m_mutex);
         //只要队列没放满，就可以继续放数据
         m_maybe_empty_cond.wait(lock,  [this]{return current_size < max_size;});
@@ -34,7 +34,7 @@ public:
         m_not_full_cond.notify_one();
     }
 
-    void Dequeue(T &item) {
+    void dequeue(T &item) {
         std::unique_lock<std::mutex> lock(m_mutex);
         //只要队列不为空，就可以取数据
         m_not_full_cond.template wait(lock, [this]{return !m_container.empty();});
