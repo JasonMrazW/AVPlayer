@@ -47,7 +47,7 @@ public:
     }
 
     virtual void start() = 0;
-
+    virtual void stop() = 0;
 protected:
     AVStream *av_stream;
     AVCodec *codec;
@@ -55,9 +55,6 @@ protected:
     ThreadSafeQueue<AVPacket> *av_packet_queue;
 
     atomic_bool running;
-
-    virtual void stop() = 0;
-
     atomic_bool isCodecInited;
 };
 #endif //AVPLAYER_AV_DECODER_H

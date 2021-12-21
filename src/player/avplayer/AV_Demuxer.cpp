@@ -38,19 +38,22 @@ void AVDemuxer::start(const char * url) {
         }
     }
 
-    clog << "id:" << current_state->video_codec->id << endl;
+    //clog << "id:" << current_state->video_codec->id << endl;
     //1秒25帧数据
     video_packet_queue = new ThreadSafeQueue<AVPacket>(25);
     //1秒 44100/1024个帧数据
     audio_packet_queue = new ThreadSafeQueue<AVPacket>(45);
 
+    AVDecoderVideo *video_decoder = new AVDecoderVideo(current_state->video_stream, video_packet_queue);
+
+    video_decode_thread = thread(std::ref(loadVideoDecoderThreadCallback),std::ref(video_decoder));
 
     readAVPackets(current_state->format_context, current_state);
 
-    video_decoder = new AVDecoderVideo(current_state->video_stream, video_packet_queue);
-    video_decoder->start();
-
     //stop read frame
+    video_decoder->stop();
+    video_decode_thread.detach();
+
     avcodec_close(current_state->video_codecContext);
     avcodec_close(current_state->audio_codecContext);
     close(current_state->format_context);
@@ -71,4 +74,8 @@ void AVDemuxer::readAVPackets(AVFormatContext *formatContext, AVState *state) {
 
 void AVDemuxer::close(AVFormatContext *formatContext) {
     avformat_close_input(&formatContext);
+}
+
+void AVDemuxer::loadVideoDecoderThreadCallback(AVDecoderVideo *video_decoder) {
+    video_decoder->start();
 }

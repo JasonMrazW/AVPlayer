@@ -28,7 +28,7 @@ public:
     };
 
     void start() override;
-
+    void stop() override;
 private:
     ThreadSafeQueue<YUVFileData> *yuv_queue;
 
@@ -38,9 +38,7 @@ private:
     uint8_t *out_buffer;
     SwsContext *sws_context;
 
-    void stop() override;
 
-    void decode();
 
     void getYUVData(AVFrame *in_frame, YUVFileData *yuv_frame_data);
 };

@@ -47,11 +47,13 @@ private:
     ThreadSafeQueue<AVPacket> *video_packet_queue = nullptr;
     ThreadSafeQueue<AVPacket> *audio_packet_queue = nullptr;
 
-    I_AVDecoder *video_decoder;
+    std::thread video_decode_thread;
 
     void close(AVFormatContext *formatContext);
 
     void readAVPackets(AVFormatContext *formatContext, AVState *state);
+
+    static void loadVideoDecoderThreadCallback(AVDecoderVideo *video_decoder);
 };
 
 

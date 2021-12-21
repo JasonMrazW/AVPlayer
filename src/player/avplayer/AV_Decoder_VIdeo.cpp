@@ -3,13 +3,11 @@
 //
 
 #include "header/AV_Decoder_VIdeo.h"
+
+
 void AVDecoderVideo::start() {
-
-}
-
-void AVDecoderVideo::decode() {
     running = true;
-    AVPacket *av_packet = nullptr;
+    AVPacket *av_packet = av_packet_alloc();
     AVFrame *av_frame = av_frame_alloc();
 
     int ret;
@@ -33,6 +31,7 @@ void AVDecoderVideo::decode() {
             YUVFileData temp;
             getYUVData(av_frame, &temp);
             //送数据进buffer
+            std::cout << "yuv data enqueue" << std::endl;
             yuv_queue->enqueue(temp);
         }
     }
