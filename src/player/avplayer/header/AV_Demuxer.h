@@ -14,6 +14,8 @@ extern "C" {
 };
 #include <iostream>
 #include "../../../thread/ThreadSafeQueue.h"
+#include "AV_Decoder.h"
+#include "AV_Decoder_VIdeo.h"
 
 class AVDemuxer {
 public:
@@ -45,7 +47,7 @@ private:
     ThreadSafeQueue<AVPacket> *video_packet_queue = nullptr;
     ThreadSafeQueue<AVPacket> *audio_packet_queue = nullptr;
 
-    bool initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecContext **out_codecContext);
+    I_AVDecoder *video_decoder;
 
     void close(AVFormatContext *formatContext);
 

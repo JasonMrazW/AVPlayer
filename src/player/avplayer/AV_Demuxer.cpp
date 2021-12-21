@@ -38,43 +38,22 @@ void AVDemuxer::start(const char * url) {
         }
     }
 
-    //start video codec
-    initCodec(current_state->video_stream, &current_state->video_codec, &current_state->video_codecContext);
-    //start audio codec
-    initCodec(current_state->audio_stream, &current_state->audio_codec, &current_state->audio_codecContext);
-
     clog << "id:" << current_state->video_codec->id << endl;
     //1秒25帧数据
     video_packet_queue = new ThreadSafeQueue<AVPacket>(25);
     //1秒 44100/1024个帧数据
     audio_packet_queue = new ThreadSafeQueue<AVPacket>(45);
+
+
     readAVPackets(current_state->format_context, current_state);
+
+    video_decoder = new AVDecoderVideo(current_state->video_stream, video_packet_queue);
+    video_decoder->start();
 
     //stop read frame
     avcodec_close(current_state->video_codecContext);
     avcodec_close(current_state->audio_codecContext);
     close(current_state->format_context);
-}
-
-bool AVDemuxer::initCodec(AVStream *video_stream, AVCodec **out_codec, AVCodecContext **out_codecContext) {
-    AVCodec *temp_codec= avcodec_find_decoder(video_stream->codecpar->codec_id);
-    if (temp_codec == nullptr) {
-        cerr << "start codec failed." << strerror(errno) << endl;
-        return false;
-    }
-    *out_codec = temp_codec;
-
-
-    AVCodecContext *temp_context = avcodec_alloc_context3(temp_codec);
-    *out_codecContext = temp_context;
-    avcodec_parameters_to_context(temp_context, video_stream->codecpar);
-    int ret = avcodec_open2(temp_context, temp_codec, nullptr);
-    if (ret < 0) {
-        cerr << "open codec failed." << strerror(errno) << endl;
-        return false;
-    }
-
-    return true;
 }
 
 void AVDemuxer::readAVPackets(AVFormatContext *formatContext, AVState *state) {

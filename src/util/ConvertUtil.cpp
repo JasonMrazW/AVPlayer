@@ -34,3 +34,22 @@ SDL_AudioFormat ConvertUtil::AVSampleFormatToSDLAudioFormat(AVSampleFormat in_fo
     }
     return out_format;
 }
+
+SDL_PixelFormatEnum ConvertUtil::AVPixFormatToSDLPixelFormat(AVPixelFormat in_format) {
+    SDL_PixelFormatEnum out_format = SDL_PIXELFORMAT_IYUV;
+    switch (in_format) {
+        case AV_PIX_FMT_YUV420P:
+            out_format = SDL_PIXELFORMAT_IYUV;
+            break;
+        case AV_PIX_FMT_NV12:
+            out_format = SDL_PIXELFORMAT_NV12;
+            break;
+        case AV_PIX_FMT_NV21:
+            out_format = SDL_PIXELFORMAT_NV21;
+            break;
+        default:
+            std::cout << "unsupported in format:" << in_format << std::endl;
+            break;
+    }
+    return out_format;
+}
