@@ -26,24 +26,24 @@ public:
     void enqueue(T item) {
         std::unique_lock<std::mutex> lock(m_mutex);
         //只要队列没放满，就可以继续放数据
-        m_maybe_empty_cond.wait(lock,  [this]{return current_size < max_size;});
+        m_cond_not_full.wait(lock, [this]{return current_size < max_size;});
 
         m_container.push(item);
         ++current_size;
         lock.unlock();
-        m_not_full_cond.notify_one();
+        m_cond_has_item.notify_one();
     }
 
     void dequeue(T &item) {
         std::unique_lock<std::mutex> lock(m_mutex);
         //只要队列不为空，就可以取数据
-        m_not_full_cond.template wait(lock, [this]{return !m_container.empty();});
+        m_cond_has_item.template wait(lock, [this]{return !m_container.empty();});
 
         item = m_container.front();
         m_container.pop();
         --current_size;
         lock.unlock();
-        m_maybe_empty_cond.notify_one();
+        m_cond_not_full.notify_one();
     }
 
 private:
@@ -51,8 +51,8 @@ private:
     std::queue<T> m_container;
     size_t current_size;
     std::mutex m_mutex;
-    std::condition_variable m_not_full_cond;
-    std::condition_variable m_maybe_empty_cond;
+    std::condition_variable m_cond_has_item;
+    std::condition_variable m_cond_not_full;
 };
 
 #endif //AVPLAYER_THREADSAFEQUEUE_H
