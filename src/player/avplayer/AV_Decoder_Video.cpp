@@ -2,7 +2,7 @@
 // Created by bo on 2021/12/21.
 //
 
-#include "header/AV_Decoder_VIdeo.h"
+#include "header/AV_Decoder_Video.h"
 
 
 void AVDecoderVideo::start() {

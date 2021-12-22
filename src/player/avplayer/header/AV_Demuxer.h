@@ -15,7 +15,7 @@ extern "C" {
 #include <iostream>
 #include "../../../thread/ThreadSafeQueue.h"
 #include "AV_Decoder.h"
-#include "AV_Decoder_VIdeo.h"
+#include "AV_Decoder_Video.h"
 
 class AVDemuxer {
 public:
