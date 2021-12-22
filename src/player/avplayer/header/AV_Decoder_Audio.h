@@ -8,7 +8,9 @@
 
 class AVDecoderAudio : public I_AVDecoder{
 public:
-    AVDecoderAudio(AVStream *avStream, ThreadSafeQueue<AVPacket> *safeQueue);
+    AVDecoderAudio(AVStream *avStream, ThreadSafeQueue<AVPacket> *safeQueue): I_AVDecoder(avStream, safeQueue) {
+        init();
+    }
 
     ~AVDecoderAudio();
 
@@ -17,6 +19,8 @@ public:
 private:
     SwrContext *swr_context;
     static const AVSampleFormat out_sample_format = AV_SAMPLE_FMT_S16; //默认音频播放格式
+
+    void init();
 };
 
 
