@@ -75,23 +75,22 @@ int main() {
 //    render.start();
 
     AV_Player player;
-    player.start("https://d1--cn-gotcha03.bilivideo.com/live-bvc/511892/live_657200_332_c521e483.flv?expires=1640183793&len=0&oi=460523204&pt=web&qn=0&trid=10003067ca92961f49d8bf439eb80dfcbacd&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=b9c93b14b4d86951ac998b0fe261961b&sk=6724cde9658c53e33b114cd74ba0755c&p2p_type=1&src=4&sl=1&free_type=0&flowtype=0&machinezone=jd&slot=0&source=onetier&order=1&site=e6d5f4fa950b116a7c0d8a8ead0c6ed0");
+    player.start("resources/video/sample.flv");
 
     //start image player
 //    SDLImagePlayer player;
 //    IImageParser *parser = new YUVImageParser();
-//    parser->start();
-
-    //start audio player
+//    player.
+//
+//    //start audio player
 //    SDLAudioStreamPlayer audioPlayer;
 //    std::thread thread(loadFFmpeg, std::ref(player), std::ref(audioPlayer));
-//    audioPlayer.startAudioPlayer();
-//    loadFFmpeg(player, audioPlayer);
+////    audioPlayer.startAudioPlayer();
 //    std::thread audio_thread(loadAudioPlayer, std::ref(audioPlayer));
-
-    //player.OnExecute(parser);
-//    ffmpeg_thread.join();
-//    audio_thread.join();
+//
+//    //player.OnExecute(parser);
+////    ffmpeg_thread.join();
+////    audio_thread.join();
 
     //registerSignal();
 //    createThreadsByPThead();

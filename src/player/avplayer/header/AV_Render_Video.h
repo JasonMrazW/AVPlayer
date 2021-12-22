@@ -41,7 +41,7 @@ public:
 private:
     SDL_Window*        window;
     SDL_Renderer*    renderer;
-    SDL_Texture*     texture;
+    SDL_Texture*     texture = nullptr;
     #define WINDOW_TITLE         "AV Player by bo"
 
     const int SCREEN_WIDTH     = 900;

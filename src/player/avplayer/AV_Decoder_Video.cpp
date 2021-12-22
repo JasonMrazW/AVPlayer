@@ -11,7 +11,7 @@ void AVDecoderVideo::start() {
     AVFrame *av_frame = av_frame_alloc();
 
     int ret;
-    int index
+    int index = 0;
     while (isCodecInited&&running) {
         //send pack to decoder
         av_packet_queue->dequeue(*av_packet);
@@ -31,11 +31,9 @@ void AVDecoderVideo::start() {
             //get yuv data & add to yuv buffer
             YUVItem temp;
             getYUVData(av_frame, &temp);
-            temp.index =
+            temp.index =index++;
             //送数据进buffer
-            cout << "enqueue" << endl;
             yuv_queue->enqueue(temp);
-            cout << "enqueue" << yuv_queue->size() << endl;
             av_frame_unref(av_frame);
         }
     }

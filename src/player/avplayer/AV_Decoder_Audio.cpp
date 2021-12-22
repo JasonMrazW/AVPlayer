@@ -41,7 +41,6 @@ void AVDecoderAudio::start() {
             getPCMData(av_frame, &pcm_item);
             //enqueue
             pcm_queue->enqueue(pcm_item);
-
             av_frame_unref(av_frame);
         }
     }

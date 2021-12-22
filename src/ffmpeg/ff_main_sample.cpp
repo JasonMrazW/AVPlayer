@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static const char *const FF_URL = "https://d1--cn-gotcha03.bilivideo.com/live-bvc/359198/live_10867865_7186953_1500.flv?expires=1639753798&len=0&oi=1961471297&pt=web&qn=0&trid=10009521f6b9b14941a6a87edb8564e25943&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=351f8b3ea64aecbfb5dd32c435ee9639&p2p_type=1&src=5&sl=1&free_type=0&flowtype=1&machinezone=ylf&sk=2935686d6cb9146c7a6a6a0b4e120e2594e074fa0760377f1a7a2b2fa0ee6443&source=onetier&order=1";
+static const char *const FF_URL = "resources/video/sample.flv";
 
 static void print_sample_format(AVFrame *pFrame);
 
@@ -58,8 +58,8 @@ void FFMainSample::initContext() {
     }
 
     //decode video frame
-    //decodeVideo(video_stream, format_context, video_stream_index);
-    decodeAudio(audio_stream, format_context, audio_stream_index);
+    decodeVideo(video_stream, format_context, video_stream_index);
+    //decodeAudio(audio_stream, format_context, audio_stream_index);
     avformat_close_input(&format_context);
 }
 
@@ -96,7 +96,7 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
     AVFrame *yuv_frame = av_frame_alloc();
     YUVFileData *yuv_frame_data = new YUVFileData();
 
-    player->reInit(codec_context->width, codec_context->height);
+    //player->reInit(codec_context->width, codec_context->height);
 
     //根据图像格式，计算出一帧图像的大小
     AVPixelFormat video_format = static_cast<AVPixelFormat>(video_stream->codecpar->format);
@@ -133,7 +133,7 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
             yuv_frame_data->data = out_buffer;
             yuv_frame_data->pin = av_frame->width;
 
-            player->updateYUVFileData(*yuv_frame_data);
+            //player->updateYUVFileData(*yuv_frame_data);
 
             av_frame_unref(yuv_frame);
             av_frame_unref(av_frame);
@@ -225,7 +225,6 @@ void FFMainSample::decodeAudio(AVStream *audio_stream, AVFormatContext *format_c
             }
             //pcm_buffer to play
             audio_player->updateAudioData(output_buffer, buffer_size);
-
             av_frame_unref(av_frame);
         }
     }
