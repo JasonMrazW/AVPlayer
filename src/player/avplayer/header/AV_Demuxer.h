@@ -60,10 +60,10 @@ private:
     ThreadSafeQueue<AVPacket> *audio_packet_queue = nullptr;
 
     std::thread video_decode_thread;
-    AVDecoderVideo *video_decoder;
+    AVDecoderVideo *video_decoder = nullptr;
 
     std::thread audio_decode_thread;
-    AVDecoderAudio *audio_decoder;
+    AVDecoderAudio *audio_decoder = nullptr;
 
     void close(AVFormatContext *formatContext);
 
