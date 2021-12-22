@@ -14,7 +14,7 @@ void AVDecoderAudio::init() {
     if (ret < 0) {
         cerr << "init swr context failed. error code :" << ret << endl;
     }
-    pcm_queue = new ThreadSafeQueue<PCMItem>(100*4);
+    pcm_queue = new ThreadSafeQueue<PCMItem>(100);
 }
 
 void AVDecoderAudio::start() {

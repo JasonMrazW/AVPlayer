@@ -30,13 +30,6 @@ public:
     bool onRender() override;
     bool onStop() override;
     bool onDestroy() override;
-
-    bool openDevice(void * params) override{
-        Video_Render_Parameters *video_params = static_cast<Video_Render_Parameters *>(params);
-        bool ret = openVideoDevice( video_params->width, video_params->height, video_params->format);
-        return ret;
-    }
-
     void setBuffer(ThreadSafeQueue<YUVItem> *queue);
 private:
     SDL_Window*        window;

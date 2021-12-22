@@ -16,9 +16,6 @@ public:
     }
     virtual bool init() = 0;
 
-    virtual bool openDevice(void * params) {
-        return false;
-    }
     virtual bool onUpdate() = 0;
     virtual bool onRender() = 0;
     virtual bool onStop() = 0;

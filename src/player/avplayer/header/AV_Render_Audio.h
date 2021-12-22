@@ -29,13 +29,6 @@ public:
     bool onStop() override;
     bool onDestroy() override;
 
-    bool openDevice(void * params) override{
-        AudioRenderParameters *parameters = static_cast<AudioRenderParameters *>(params);
-        bool ret = openAudioDevice(parameters->audio_format, parameters->nb_samples, parameters->freq, parameters->channels);
-        delete parameters;
-        return ret;
-    }
-
     //audio device callback
     static void fillDataCallBack(void *userdata, uint8_t *stream, int len);
 

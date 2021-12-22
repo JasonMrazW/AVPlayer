@@ -35,6 +35,7 @@ void AV_Render_SDL::start() {
 
     //初始化SDL渲染相关组件
     video_render->init();
+
     while (running) {
         while (SDL_PollEvent(&event)) {
             onEvent(&event);
@@ -49,34 +50,10 @@ void AV_Render_SDL::updateBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSaf
     audio_render->setBuffer(pcm_buffer);
 }
 
-bool AV_Render_SDL::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
-    AudioRenderParameters parameters;
-    parameters.audio_format = audio_format;
-    parameters.nb_samples = nb_samples;
-    parameters.channels = channels;
-
-    sendEvent(SDL_USER_EVENT_OPEN_AUDIO_DEVICE, &parameters);
-    return true;
-}
-
-bool AV_Render_SDL::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
-    VideoRenderParameters parameters;
-    parameters.data = data;
-    parameters.width = width;
-    parameters.height = height;
-    parameters.format = format;
-    parameters.pin = pin;
-
-    sendEvent(SDL_USER_EVENT_CREATE_TEXTURE, &parameters);
-    return true;
-}
-
 Uint32 AV_Render_SDL::SDL_TimerCallback(Uint32 interval, void *param) {
 
     AV_Render_SDL *sdl_render = static_cast<AV_Render_SDL *>(param);
     sdl_render->sendEvent(SDL_USER_EVENT_ON_FRAME_AVAILABLE, nullptr);
-
-
     return (interval);
 }
 
@@ -101,16 +78,6 @@ bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
     if (sdlEvent->type >= SDL_USEREVENT) {
         SDL_UserEvent userEvent = sdlEvent->user;
         switch (userEvent.code) {
-            case SDL_USER_EVENT_CREATE_WINDOW_DISPLAY:
-                break;
-            case SDL_USER_EVENT_CREATE_TEXTURE:
-                //根据要播放的视频信息，创建Texture
-                video_render->openDevice(userEvent.data1);
-                break;
-            case SDL_USER_EVENT_OPEN_AUDIO_DEVICE:
-                //根据要播放的音频信息，打开音频播放设备
-                audio_render->openDevice(userEvent.data1);
-                break;
             case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
                 onRender();
                 break;

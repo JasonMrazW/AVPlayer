@@ -12,9 +12,6 @@
 #include "AV_Render_Interface.h"
 #include "AV_Render_Video.h"
 
-#define SDL_USER_EVENT_CREATE_WINDOW_DISPLAY 0x01
-#define SDL_USER_EVENT_CREATE_TEXTURE 0x02
-#define SDL_USER_EVENT_OPEN_AUDIO_DEVICE 0x03
 #define SDL_USER_EVENT_ON_FRAME_AVAILABLE 0x04
 
 class AV_Render_SDL {
@@ -25,10 +22,6 @@ public:
     bool init();
 
     void start();
-
-    bool openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels);
-
-    bool openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin);
 
     void sendEvent(uint32_t event_type, void *data);
 
