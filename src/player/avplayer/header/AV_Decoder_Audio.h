@@ -21,6 +21,10 @@ public:
 
     void start();
     void stop();
+
+    ThreadSafeQueue<PCMItem> *getPCMQueue() {
+        return pcm_queue;
+    }
 private:
     SwrContext *swr_context;
 

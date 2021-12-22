@@ -29,6 +29,13 @@ public:
 
     void start(const char * url);
 
+    ThreadSafeQueue<YUVFileData> *getYUVBuffer() {
+        return video_decoder->getYUVQueue();
+    }
+
+    ThreadSafeQueue<PCMItem> *getPCMBuffer() {
+        return audio_decoder->getPCMQueue();
+    }
 private:
     struct AVState {
         AVFormatContext *format_context = nullptr;
@@ -49,7 +56,10 @@ private:
     ThreadSafeQueue<AVPacket> *audio_packet_queue = nullptr;
 
     std::thread video_decode_thread;
+    AVDecoderVideo *video_decoder;
+
     std::thread audio_decode_thread;
+    AVDecoderAudio *audio_decoder;
 
     void close(AVFormatContext *formatContext);
 

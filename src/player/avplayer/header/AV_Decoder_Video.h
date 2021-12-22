@@ -29,6 +29,9 @@ public:
 
     void start() override;
     void stop() override;
+    ThreadSafeQueue<YUVFileData> *getYUVQueue() {
+        return yuv_queue;
+    }
 private:
     ThreadSafeQueue<YUVFileData> *yuv_queue;
 
