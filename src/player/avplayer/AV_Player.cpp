@@ -6,6 +6,8 @@
 
 AV_Player::AV_Player() {
     render = new AV_Render_SDL();
+    render->init();
+
     demuxer = new AVDemuxer();
 }
 
@@ -16,6 +18,11 @@ AV_Player::~AV_Player() {
 void AV_Player::start(std::string url) {
     std::thread demuxer_thread = thread(std::ref(loadDemuxerCallback), std::ref(*demuxer), url);
 
+    while (demuxer->getYUVBuffer() == nullptr) {
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
+    }
+
+    render->updateBuffer(demuxer->getYUVBuffer(), demuxer->getPCMBuffer());
     render->start();
     demuxer_thread.join();
 }

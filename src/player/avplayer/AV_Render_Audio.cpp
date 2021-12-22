@@ -65,3 +65,7 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
     render->audio_pos +=len;
     render->audio_length.value -=len;
 }
+
+void AV_Render_Audio::setBuffer(ThreadSafeQueue<PCMItem> *queue) {
+    pcm_queue = queue;
+}

@@ -15,14 +15,24 @@ AV_Render_SDL::~AV_Render_SDL() {
 }
 
 //******************public method******************
-void AV_Render_SDL::start() {
-    if (!onInit()) {
-        return;
+bool AV_Render_SDL::init() {
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+        cerr << "init sdl failed." << strerror(errno) << endl;
+        return false;
     }
-    running = true;
+    //初始化定时器，用于刷新视频帧
+    timerId = SDL_AddTimer(TIME_INTERVAL, &SDL_TimerCallback, this);
 
+    //初始化Video和Audio
+    audio_render = new AV_Render_Audio();
+    video_render = new AV_Render_Video();
+    return true;
+}
+
+void AV_Render_SDL::start() {
+    running = true;
     SDL_Event event;
-    int ret = 0;
+
     //初始化SDL渲染相关组件
     video_render->init();
     while (running) {
@@ -34,8 +44,9 @@ void AV_Render_SDL::start() {
     onStop();
 }
 
-void AV_Render_SDL::openWindow() {
-    sendEvent(SDL_USER_EVENT_CREATE_WINDOW_DISPLAY, nullptr);
+void AV_Render_SDL::updateBuffer(ThreadSafeQueue<YUVFileData> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer) {
+    video_render->setBuffer(yuv_buffer);
+    audio_render->setBuffer(pcm_buffer);
 }
 
 bool AV_Render_SDL::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
@@ -84,19 +95,7 @@ void AV_Render_SDL::sendEvent(uint32_t event_type, void *data) {
 }
 
 //******************private method******************
-bool AV_Render_SDL::onInit() {
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-        cerr << "init sdl failed." << strerror(errno) << endl;
-        return false;
-    }
-    //初始化定时器，用于刷新视频帧
-    timerId = SDL_AddTimer(TIME_INTERVAL, &SDL_TimerCallback, this);
 
-    //初始化Video和Audio
-    audio_render = new AV_Render_Audio();
-    video_render = new AV_Render_Video();
-    return true;
-}
 
 bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
     if (sdlEvent->type >= SDL_USEREVENT) {

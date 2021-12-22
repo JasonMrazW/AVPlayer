@@ -54,3 +54,7 @@ bool AV_Render_Video::openVideoDevice(uint8_t *data, int width, int height, Uint
     texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, width, height);
     return true;
 }
+
+void AV_Render_Video::setBuffer(ThreadSafeQueue<YUVFileData> *queue) {
+    yuv_fileQueue = queue;
+}

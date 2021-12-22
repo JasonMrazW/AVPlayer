@@ -33,7 +33,7 @@ public:
         return yuv_queue;
     }
 private:
-    ThreadSafeQueue<YUVFileData> *yuv_queue;
+    ThreadSafeQueue<YUVFileData> *yuv_queue = nullptr;
 
     //根据图像格式，计算出一帧图像的大小
     AVPixelFormat video_format;

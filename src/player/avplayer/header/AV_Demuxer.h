@@ -30,10 +30,14 @@ public:
     void start(const char * url);
 
     ThreadSafeQueue<YUVFileData> *getYUVBuffer() {
+        if (video_decoder == nullptr) return nullptr;
+
         return video_decoder->getYUVQueue();
     }
 
     ThreadSafeQueue<PCMItem> *getPCMBuffer() {
+        if (audio_decoder == nullptr) return nullptr;
+
         return audio_decoder->getPCMQueue();
     }
 private:

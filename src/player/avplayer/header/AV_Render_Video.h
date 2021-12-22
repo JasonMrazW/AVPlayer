@@ -5,6 +5,8 @@
 #ifndef AVPLAYER_AV_RENDER_VIDEO_H
 #define AVPLAYER_AV_RENDER_VIDEO_H
 #include "AV_Render_Interface.h"
+#include "../../../thread/ThreadSafeQueue.h"
+#include "../../../parser/header/YUVFileData.h"
 typedef struct Video_Render_Parameters {
     uint8_t *data; // 文件二进制内容
     int width; //分辨率宽
@@ -34,6 +36,8 @@ public:
                                    video_params->pin);
         return ret;
     }
+
+    void setBuffer(ThreadSafeQueue<YUVFileData> *queue);
 private:
     SDL_Window*        window;
     SDL_Renderer*    renderer;
@@ -45,6 +49,8 @@ private:
 
     uint8_t *current_yuv_data = nullptr;
     int current_pin = 0;
+
+    ThreadSafeQueue<YUVFileData> *yuv_fileQueue = nullptr;
 
     bool openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin);
 };

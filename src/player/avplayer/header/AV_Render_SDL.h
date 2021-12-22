@@ -22,6 +22,8 @@ public:
     AV_Render_SDL();
     ~AV_Render_SDL();
 
+    bool init();
+
     void start();
 
     bool openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels);
@@ -32,17 +34,16 @@ public:
 
     static Uint32 SDL_TimerCallback(Uint32 interval, void *param);
 
-    void openWindow();
+    void updateBuffer(ThreadSafeQueue<YUVFileData> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
 private:
     bool running = false;
     static const uint8_t TIME_INTERVAL = 40; //40ms
     SDL_TimerID timerId;
 
-    IAVRender *video_render;
-    IAVRender *audio_render;
+    AV_Render_Video *video_render;
+    AV_Render_Audio *audio_render;
 
     //初始化SDL
-    bool onInit();
 
     bool onEvent(SDL_Event *sdlEvent);
 
