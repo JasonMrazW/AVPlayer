@@ -23,6 +23,8 @@ void AV_Render_SDL::start() {
 
     SDL_Event event;
     int ret = 0;
+    //初始化SDL渲染相关组件
+    video_render->init();
     while (running) {
         while (SDL_PollEvent(&event)) {
             onEvent(&event);
@@ -30,6 +32,10 @@ void AV_Render_SDL::start() {
     }
 
     onStop();
+}
+
+void AV_Render_SDL::openWindow() {
+    sendEvent(SDL_USER_EVENT_CREATE_WINDOW_DISPLAY, nullptr);
 }
 
 bool AV_Render_SDL::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels) {
@@ -93,13 +99,10 @@ bool AV_Render_SDL::onInit() {
 }
 
 bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
-
     if (sdlEvent->type >= SDL_USEREVENT) {
         SDL_UserEvent userEvent = sdlEvent->user;
         switch (userEvent.code) {
             case SDL_USER_EVENT_CREATE_WINDOW_DISPLAY:
-                //初始化SDL渲染相关组件
-                video_render->init();
                 break;
             case SDL_USER_EVENT_CREATE_TEXTURE:
                 //根据要播放的视频信息，创建Texture
@@ -110,7 +113,6 @@ bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
                 audio_render->openDevice(userEvent.data1);
                 break;
             case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
-                cout << "on frame available." << endl;
                 onRender();
                 break;
             default:

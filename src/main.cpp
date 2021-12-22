@@ -19,6 +19,8 @@
 #include "player/avplayer/header/AV_Render_SDL.h"
 #include "player/avplayer/header/AV_Demuxer.h"
 #include "thread/ThreadSafeQueue.h"
+#include "player/avplayer/header/AV_Player.h"
+
 extern "C" {
     #include <libavformat/avformat.h>
 }
@@ -72,8 +74,8 @@ int main() {
 //    AV_Render_SDL render;
 //    render.start();
 
-    AVDemuxer demuxer;
-    demuxer.start("resources/video/sample.flv");
+    AV_Player player;
+    player.start("resources/video/sample.flv");
 
     //start image player
 //    SDLImagePlayer player;
