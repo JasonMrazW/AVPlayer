@@ -29,7 +29,7 @@ public:
 
     void start(const char * url);
 
-    ThreadSafeQueue<YUVFileData> *getYUVBuffer() {
+    ThreadSafeQueue<YUVItem> *getYUVBuffer() {
         if (video_decoder == nullptr) return nullptr;
 
         return video_decoder->getYUVQueue();
@@ -40,6 +40,7 @@ public:
 
         return audio_decoder->getPCMQueue();
     }
+
 private:
     struct AVState {
         AVFormatContext *format_context = nullptr;

@@ -18,15 +18,25 @@ bool AV_Render_Video::onUpdate() {
 }
 
 bool AV_Render_Video::onRender() {
-    if (current_yuv_data == nullptr) return false;
+    YUVItem item;
+    yuv_fileQueue->dequeue(item);
 
-    SDL_UpdateTexture(texture, nullptr, current_yuv_data, current_pin);
+    if(texture == nullptr) {
+        openVideoDevice(item.width, item.height, item.format);
+    }
 
-    SDL_RenderClear(renderer);
-    // Do your drawing here
-    SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+    try {
+        SDL_UpdateTexture(texture, nullptr, item.data, item.pin);
 
-    SDL_RenderPresent(renderer);
+        SDL_RenderClear(renderer);
+        // Do your drawing here
+        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+
+        SDL_RenderPresent(renderer);
+    } catch (std::exception &e) {
+        cout << "error:" << e.what() << endl;
+    }
+
     return true;
 }
 
@@ -41,20 +51,17 @@ bool AV_Render_Video::onDestroy() {
     if (current_yuv_data != nullptr) {
         delete current_yuv_data;
     }
-
     return true;
 }
 
-bool AV_Render_Video::openVideoDevice(uint8_t *data, int width, int height, Uint32 format, int pin) {
+bool AV_Render_Video::openVideoDevice(int width, int height, uint32_t format) {
     if (texture != nullptr) {
         SDL_DestroyTexture(texture);
     }
-    current_yuv_data = data;
-    current_pin = pin;
     texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, width, height);
     return true;
 }
 
-void AV_Render_Video::setBuffer(ThreadSafeQueue<YUVFileData> *queue) {
+void AV_Render_Video::setBuffer(ThreadSafeQueue<YUVItem> *queue) {
     yuv_fileQueue = queue;
 }

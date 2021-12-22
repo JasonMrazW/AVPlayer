@@ -5,13 +5,13 @@
 #ifndef AVPLAYER_AV_DECODER_VIDEO_H
 #define AVPLAYER_AV_DECODER_VIDEO_H
 #include "AV_Decoder.h"
-#include "../../../parser/header/YUVFileData.h"
 #include "../../../util/ConvertUtil.h"
+#include "AV_Render_RawItem.h"
 
 class AVDecoderVideo : public I_AVDecoder{
 public:
     AVDecoderVideo(AVStream *stream, ThreadSafeQueue<AVPacket> *safeQueue): I_AVDecoder(stream, safeQueue) {
-        yuv_queue = new ThreadSafeQueue<YUVFileData>(25);
+        yuv_queue = new ThreadSafeQueue<YUVItem>(50);
         //根据图像格式，计算出一帧图像的大小
         video_format = static_cast<AVPixelFormat>(stream->codecpar->format);
         buffer_size = av_image_get_buffer_size(video_format, codec_context->width, codec_context->height, 1);
@@ -29,11 +29,11 @@ public:
 
     void start() override;
     void stop() override;
-    ThreadSafeQueue<YUVFileData> *getYUVQueue() {
+    ThreadSafeQueue<YUVItem> *getYUVQueue() {
         return yuv_queue;
     }
 private:
-    ThreadSafeQueue<YUVFileData> *yuv_queue;
+    ThreadSafeQueue<YUVItem> *yuv_queue;
 
     //根据图像格式，计算出一帧图像的大小
     AVPixelFormat video_format;
@@ -43,7 +43,9 @@ private:
 
 
 
-    void getYUVData(AVFrame *in_frame, YUVFileData *yuv_frame_data);
+
+
+    void getYUVData(AVFrame *in_frame, YUVItem *yuv_frame_data);
 };
 
 

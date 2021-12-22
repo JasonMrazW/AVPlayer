@@ -44,7 +44,7 @@ void AV_Render_SDL::start() {
     onStop();
 }
 
-void AV_Render_SDL::updateBuffer(ThreadSafeQueue<YUVFileData> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer) {
+void AV_Render_SDL::updateBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer) {
     video_render->setBuffer(yuv_buffer);
     audio_render->setBuffer(pcm_buffer);
 }
@@ -151,5 +151,7 @@ bool AV_Render_SDL::onDestroy() {
 
 //控制视频的帧率
 bool AV_Render_SDL::onRender() {
-    return video_render->onRender();
+    //video_render->onRender();
+    audio_render->onRender();
+    return true;
 }

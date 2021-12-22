@@ -14,7 +14,7 @@ void AVDecoderAudio::init() {
     if (ret < 0) {
         cerr << "init swr context failed. error code :" << ret << endl;
     }
-    pcm_queue = new ThreadSafeQueue<PCMItem>(50);
+    pcm_queue = new ThreadSafeQueue<PCMItem>(100*4);
 }
 
 void AVDecoderAudio::start() {
@@ -27,7 +27,7 @@ void AVDecoderAudio::start() {
         ret = avcodec_send_packet(codec_context, av_packet);
         if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             cerr << "audio codec send packed failed. error code :" << ret << endl;
-            break;
+            continue;
         }
 
         while (ret >= 0) {
@@ -40,8 +40,11 @@ void AVDecoderAudio::start() {
             PCMItem pcm_item;
             getPCMData(av_frame, &pcm_item);
             //enqueue
-            std::cout << "pcm data enqueue" << std::endl;
+            std::cout << "enqueue" << std::endl;
             pcm_queue->enqueue(pcm_item);
+            std::cout << "enqueue result:" << pcm_queue->current_size << std::endl;
+
+            av_frame_unref(av_frame);
         }
     }
 }
@@ -66,4 +69,7 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
     }
 
     item->data_length = buffer_size;
+    item->audio_format = ConvertUtil::AVSampleFormatToSDLAudioFormat(out_format);
+    item->freq = av_frame->sample_rate;
+    item->channels = av_frame->channels;
 }

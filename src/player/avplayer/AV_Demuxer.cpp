@@ -40,9 +40,9 @@ void AVDemuxer::start(const char * url) {
 
     //clog << "id:" << current_state->video_codec->id << endl;
     //1秒25帧数据
-    video_packet_queue = new ThreadSafeQueue<AVPacket>(25);
+    video_packet_queue = new ThreadSafeQueue<AVPacket>(25*4);
     //1秒 44100/1024个帧数据
-    audio_packet_queue = new ThreadSafeQueue<AVPacket>(45);
+    audio_packet_queue = new ThreadSafeQueue<AVPacket>(100*4);
 
     //启动图像解码器
     video_decoder = new AVDecoderVideo(current_state->video_stream, video_packet_queue);
@@ -70,7 +70,7 @@ void AVDemuxer::readAVPackets(AVFormatContext *formatContext, AVState *state) {
     AVPacket *avPacket = av_packet_alloc();
     while(av_read_frame(formatContext, avPacket) >= 0) {
         if (avPacket->stream_index == state->video_stream_index) {
-            video_packet_queue->enqueue(*avPacket);
+            //video_packet_queue->enqueue(*avPacket);
         } else if(avPacket->stream_index == state->audio_stream_index) {
             audio_packet_queue->enqueue(*avPacket);
         } else {

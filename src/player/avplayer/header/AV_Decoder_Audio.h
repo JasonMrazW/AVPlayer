@@ -5,8 +5,9 @@
 #ifndef AVPLAYER_AV_DECODER_AUDIO_H
 #define AVPLAYER_AV_DECODER_AUDIO_H
 #include "AV_Decoder.h"
-#include "AV_PCM_DataItem.h"
+#include "AV_Render_RawItem.h"
 #include "../../../thread/ThreadSafeQueue.h"
+#include "../../../util/ConvertUtil.h"
 
 class AVDecoderAudio : public I_AVDecoder{
 public:
@@ -29,6 +30,7 @@ private:
     SwrContext *swr_context;
 
     ThreadSafeQueue<PCMItem> *pcm_queue;
+    AVSampleFormat out_format = AV_SAMPLE_FMT_S16;
 
     static const AVSampleFormat out_sample_format = AV_SAMPLE_FMT_S16; //默认音频播放格式
 

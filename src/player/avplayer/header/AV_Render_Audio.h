@@ -7,7 +7,7 @@
 #include "AV_Render_Interface.h"
 #include "SDL.h"
 #include "../../../thread/ThreadSafeQueue.h"
-#include "AV_PCM_DataItem.h"
+#include "AV_Render_RawItem.h"
 
 typedef struct Audio_Render_Parameters {
     SDL_AudioFormat audio_format;
@@ -25,9 +25,7 @@ public:
     bool onUpdate() override{
         return false;
     }
-    bool onRender() override{
-      return false;
-    };
+    bool onRender() override;
     bool onStop() override;
     bool onDestroy() override;
 
@@ -44,7 +42,7 @@ public:
     void setBuffer(ThreadSafeQueue<PCMItem> *queue);
 private:
     SDL_AudioSpec *audioSpec;
-    SDL_AudioDeviceID audioDeviceId;
+    SDL_AudioDeviceID audioDeviceId = 0;
     uint8_t audioFormat;
     SDL_atomic_t  audio_length; // audio file length
     uint8_t *audio_pos; //current position

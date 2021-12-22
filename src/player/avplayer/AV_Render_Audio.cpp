@@ -21,6 +21,7 @@ bool AV_Render_Audio::init() {
 bool AV_Render_Audio::onStop() {
     if (audioDeviceId != 0) {
         SDL_CloseAudioDevice(audioDeviceId);
+        audioDeviceId = 0;
     }
     return true;
 }
@@ -64,8 +65,28 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
     SDL_MixAudioFormat(stream, render->audio_pos, render->audioFormat, len, SDL_MIX_MAXVOLUME);
     render->audio_pos +=len;
     render->audio_length.value -=len;
+
+    //取下个item
+    if(render->audio_length.value == 0) {
+        PCMItem item;
+        render->pcm_queue->dequeue(item);
+//        std::cout << "playing audio data length:" << render->pcm_queue->current_size << std::endl;
+        render->audio_pos = item.data;
+        render->audio_length.value = item.data_length;
+    }
 }
 
 void AV_Render_Audio::setBuffer(ThreadSafeQueue<PCMItem> *queue) {
     pcm_queue = queue;
+}
+
+bool AV_Render_Audio::onRender() {
+    if (audioDeviceId < 2) {
+        PCMItem item;
+        pcm_queue->dequeue(item);
+        audio_pos = item.data;
+        audio_length.value = item.data_length;
+        openAudioDevice(item.audio_format, item.nb_samples, item.freq, item.channels);
+    }
+    return false;
 }

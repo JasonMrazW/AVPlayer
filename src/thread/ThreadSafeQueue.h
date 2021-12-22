@@ -46,10 +46,10 @@ public:
         m_cond_not_full.notify_one();
     }
 
+    size_t current_size;
 private:
     uint8_t max_size;
     std::queue<T> m_container;
-    size_t current_size;
     std::mutex m_mutex;
     std::condition_variable m_cond_has_item;
     std::condition_variable m_cond_not_full;
