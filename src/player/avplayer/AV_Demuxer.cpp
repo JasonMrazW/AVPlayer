@@ -44,15 +44,22 @@ void AVDemuxer::start(const char * url) {
     //1秒 44100/1024个帧数据
     audio_packet_queue = new ThreadSafeQueue<AVPacket>(45);
 
+    //启动图像解码器
     AVDecoderVideo *video_decoder = new AVDecoderVideo(current_state->video_stream, video_packet_queue);
-
     video_decode_thread = thread(std::ref(loadVideoDecoderThreadCallback),std::ref(video_decoder));
+
+    //启动音频解码器
+    AVDecoderAudio *audio_decoder = new AVDecoderAudio(current_state->audio_stream, audio_packet_queue);
+    audio_decode_thread = thread(std::ref(loadAudioDecoderThreadCallback), std::ref(audio_decoder));
 
     readAVPackets(current_state->format_context, current_state);
 
     //stop read frame
     video_decoder->stop();
     video_decode_thread.detach();
+
+    audio_decoder->stop();
+    audio_decode_thread.detach();
 
     avcodec_close(current_state->video_codecContext);
     avcodec_close(current_state->audio_codecContext);
@@ -78,4 +85,8 @@ void AVDemuxer::close(AVFormatContext *formatContext) {
 
 void AVDemuxer::loadVideoDecoderThreadCallback(AVDecoderVideo *video_decoder) {
     video_decoder->start();
+}
+
+void AVDemuxer::loadAudioDecoderThreadCallback(AVDecoderAudio *audio_decoder) {
+    audio_decoder->start();
 }

@@ -16,7 +16,7 @@ void AVDecoderVideo::start() {
         av_packet_queue->dequeue(*av_packet);
         ret = avcodec_send_packet(codec_context,av_packet);
         if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            cerr << "codec send packed failed. error code :" << ret << endl;
+            cerr << "video codec send packed failed. error code :" << ret << endl;
             break;
         }
         //receive frame from decoder
@@ -31,7 +31,6 @@ void AVDecoderVideo::start() {
             YUVFileData temp;
             getYUVData(av_frame, &temp);
             //送数据进buffer
-            std::cout << "yuv data enqueue" << std::endl;
             yuv_queue->enqueue(temp);
         }
     }

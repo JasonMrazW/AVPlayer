@@ -16,6 +16,7 @@ extern "C" {
 #include "../../../thread/ThreadSafeQueue.h"
 #include "AV_Decoder.h"
 #include "AV_Decoder_Video.h"
+#include "AV_Decoder_Audio.h"
 
 class AVDemuxer {
 public:
@@ -48,12 +49,15 @@ private:
     ThreadSafeQueue<AVPacket> *audio_packet_queue = nullptr;
 
     std::thread video_decode_thread;
+    std::thread audio_decode_thread;
 
     void close(AVFormatContext *formatContext);
 
     void readAVPackets(AVFormatContext *formatContext, AVState *state);
 
     static void loadVideoDecoderThreadCallback(AVDecoderVideo *video_decoder);
+
+    static void loadAudioDecoderThreadCallback(AVDecoderAudio *audio_decoder);
 };
 
 

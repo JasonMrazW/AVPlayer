@@ -14,12 +14,56 @@ void AVDecoderAudio::init() {
     if (ret < 0) {
         cerr << "init swr context failed. error code :" << ret << endl;
     }
+    pcm_queue = new ThreadSafeQueue<PCMItem>(50);
+}
 
-    //init swr buffer
-    //一个采样点所占的字节数
-    cout << "audio sample fmt:" << codec_context->sample_fmt << endl;
-    int buffer_size = av_samples_get_buffer_size(nullptr, codec_context->channels, 1024,
-                                             out_sample_format, 1);
-    uint8_t * output_buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
-    memset(output_buffer, 0, buffer_size);
+void AVDecoderAudio::start() {
+    running = true;
+    AVPacket *av_packet = av_packet_alloc();
+    AVFrame *av_frame = av_frame_alloc();
+    int ret;
+    while (isCodecInited && running) {
+        av_packet_queue->dequeue(*av_packet);
+        ret = avcodec_send_packet(codec_context, av_packet);
+        if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            cerr << "audio codec send packed failed. error code :" << ret << endl;
+            break;
+        }
+
+        while (ret >= 0) {
+            ret = avcodec_receive_frame(codec_context, av_frame);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                //receive frame end
+                break;
+            }
+
+            PCMItem pcm_item;
+            getPCMData(av_frame, &pcm_item);
+            //enqueue
+            std::cout << "pcm data enqueue" << std::endl;
+            pcm_queue->enqueue(pcm_item);
+        }
+    }
+}
+
+void AVDecoderAudio::stop() {
+    running = false;
+}
+
+void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
+    //一帧数据的大小(表示有nb_samples的数据) = channels * nb_samples * format所占字节
+
+    uint32_t buffer_size = av_samples_get_buffer_size(NULL, av_frame->channels, av_frame->nb_samples,
+                                                 out_sample_format, 1);
+    item->data = static_cast<uint8_t *>(av_malloc(buffer_size));
+    memset(item->data, 0, buffer_size);;
+
+    int samples = swr_convert(swr_context, &item->data, av_frame->nb_samples,
+                              (const uint8_t **)av_frame->extended_data, av_frame->nb_samples);
+    if (samples <= 0) {
+        cerr << "convert audio info failed." << endl;
+        return;
+    }
+
+    item->data_length = buffer_size;
 }
