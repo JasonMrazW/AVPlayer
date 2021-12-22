@@ -70,7 +70,7 @@ void AVDemuxer::readAVPackets(AVFormatContext *formatContext, AVState *state) {
     AVPacket *avPacket = av_packet_alloc();
     while(av_read_frame(formatContext, avPacket) >= 0) {
         if (avPacket->stream_index == state->video_stream_index) {
-            //video_packet_queue->enqueue(*avPacket);
+            video_packet_queue->enqueue(*avPacket);
         } else if(avPacket->stream_index == state->audio_stream_index) {
             audio_packet_queue->enqueue(*avPacket);
         } else {

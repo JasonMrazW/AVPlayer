@@ -26,8 +26,15 @@ bool AV_Render_Video::onRender() {
     }
 
     try {
-        SDL_UpdateTexture(texture, nullptr, item.data, item.pin);
+        if(texture == nullptr) {
+            return false;
+        }
+        std::cout << "enqueue result:" << std::endl;
 
+        int ret = SDL_UpdateTexture(texture, nullptr, item.data, item.pin);
+        if (ret < 0) {
+            std::cout << "enqueue result:" << SDL_GetError() << std::endl;;
+        }
         SDL_RenderClear(renderer);
         // Do your drawing here
         SDL_RenderCopy(renderer, texture, nullptr, nullptr);

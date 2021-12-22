@@ -19,5 +19,6 @@ struct YUVItem {
     int height; //分辨率高
     uint32_t format; //文件格式
     int pin;
+    int index;
 };
 #endif //AVPLAYER_AV_RENDER_RAWITEM_H

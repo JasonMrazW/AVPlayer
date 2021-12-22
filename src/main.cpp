@@ -75,7 +75,7 @@ int main() {
 //    render.start();
 
     AV_Player player;
-    player.start("https://d1--cn-gotcha03.bilivideo.com/live-bvc/780765/live_3940502_7086556_4000.flv?expires=1640178598&len=0&oi=460523204&pt=web&qn=0&trid=10004918330b6f1c44369c0490ba7da8a5a9&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=3a3c4072dc31992b997bd1c2c3fbe050&sk=2935686d6cb9146c7a6a6a0b4e120e2594e074fa0760377f1a7a2b2fa0ee6443&p2p_type=1&src=5&sl=2&free_type=0&flowtype=1&machinezone=jd&pp=srt&slot=0&source=onetier&order=1&site=e6d5f4fa950b116a7c0d8a8ead0c6ed0");
+    player.start("https://d1--cn-gotcha03.bilivideo.com/live-bvc/511892/live_657200_332_c521e483.flv?expires=1640183793&len=0&oi=460523204&pt=web&qn=0&trid=10003067ca92961f49d8bf439eb80dfcbacd&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=b9c93b14b4d86951ac998b0fe261961b&sk=6724cde9658c53e33b114cd74ba0755c&p2p_type=1&src=4&sl=1&free_type=0&flowtype=0&machinezone=jd&slot=0&source=onetier&order=1&site=e6d5f4fa950b116a7c0d8a8ead0c6ed0");
 
     //start image player
 //    SDLImagePlayer player;

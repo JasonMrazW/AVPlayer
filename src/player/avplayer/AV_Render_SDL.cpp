@@ -151,7 +151,7 @@ bool AV_Render_SDL::onDestroy() {
 
 //控制视频的帧率
 bool AV_Render_SDL::onRender() {
-    //video_render->onRender();
+    video_render->onRender();
     audio_render->onRender();
     return true;
 }

@@ -11,13 +11,14 @@ void AVDecoderVideo::start() {
     AVFrame *av_frame = av_frame_alloc();
 
     int ret;
+    int index
     while (isCodecInited&&running) {
         //send pack to decoder
         av_packet_queue->dequeue(*av_packet);
         ret = avcodec_send_packet(codec_context,av_packet);
         if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             cerr << "video codec send packed failed. error code :" << ret << endl;
-            break;
+            continue;
         }
         //receive frame from decoder
         while(ret >= 0) {
@@ -30,9 +31,11 @@ void AVDecoderVideo::start() {
             //get yuv data & add to yuv buffer
             YUVItem temp;
             getYUVData(av_frame, &temp);
+            temp.index =
             //送数据进buffer
+            cout << "enqueue" << endl;
             yuv_queue->enqueue(temp);
-
+            cout << "enqueue" << yuv_queue->size() << endl;
             av_frame_unref(av_frame);
         }
     }
@@ -52,6 +55,8 @@ void AVDecoderVideo::getYUVData(AVFrame *in_frame, YUVItem *yuv_frame_data) {
     yuv_frame_data->height = in_frame->height;
     yuv_frame_data->format = ConvertUtil::AVPixFormatToSDLPixelFormat(static_cast<AVPixelFormat>(in_frame->format));
     yuv_frame_data->pin = in_frame->width;
+
+    av_frame_unref(yuv_frame);
 }
 
 
