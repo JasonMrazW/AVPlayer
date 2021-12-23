@@ -75,7 +75,7 @@ int main() {
 //    render.start();
 
     AV_Player player;
-    player.start("https://d1--cn-gotcha03.bilivideo.com/live-bvc/432201/live_733055_2208852.flv?expires=1640190533&len=0&oi=1961471297&pt=web&qn=0&trid=100025002c5a84db4a33a01140a49f3e9385&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha03&sign=6902272e482e73cc6d8feb1d70e642ab&sk=41a21781779d456d58320c73aa3de14e&p2p_type=1&src=4&sl=1&free_type=0&flowtype=0&machinezone=jd&pp=rtmp&slot=5&source=onetier&order=1&site=e6d5f4fa950b116a7c0d8a8ead0c6ed0");
+    player.start("resources/video/sample.flv");
 
     //start image player
 //    SDLImagePlayer player;
