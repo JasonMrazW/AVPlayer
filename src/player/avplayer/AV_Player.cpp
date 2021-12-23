@@ -22,7 +22,7 @@ void AV_Player::start(std::string url) {
         std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 
-    render->updateBuffer(demuxer->getYUVBuffer(), demuxer->getPCMBuffer());
+    render->setBuffer(demuxer->getYUVBuffer(), demuxer->getPCMBuffer());
     render->start();
     demuxer_thread.join();
 }

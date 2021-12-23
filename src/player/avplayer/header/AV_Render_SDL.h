@@ -27,7 +27,7 @@ public:
 
     static Uint32 SDL_TimerCallback(Uint32 interval, void *param);
 
-    void updateBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
+    void setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
 private:
     bool running = false;
     static const uint8_t TIME_INTERVAL = 40; //40ms

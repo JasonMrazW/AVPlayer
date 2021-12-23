@@ -50,10 +50,8 @@ private:
         uint8_t video_stream_index = -1;
         uint8_t audio_stream_index = -1;
 
-        AVCodec *video_codec = nullptr;
         AVCodecContext *video_codecContext = nullptr;
 
-        AVCodec *audio_codec = nullptr;
         AVCodecContext *audio_codecContext = nullptr;
     };
 
