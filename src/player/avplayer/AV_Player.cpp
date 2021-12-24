@@ -24,8 +24,8 @@ void AV_Player::start(std::string url) {
     }
 
     //将缓冲区的指针给Render，让Render知道去哪取数据
-    render->setBuffer(demuxer->getYUVBuffer(), demuxer->getPCMBuffer());
-    render->start();
+    //render->setBuffer(demuxer->getYUVBuffer(), demuxer->getPCMBuffer());
+    //render->start();
 
     //结束
     demuxer_thread.join();

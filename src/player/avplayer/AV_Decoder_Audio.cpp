@@ -17,35 +17,6 @@ void AVDecoderAudio::init() {
     pcm_queue = new ThreadSafeQueue<PCMItem>(100);
 }
 
-void AVDecoderAudio::start() {
-    running = true;
-    AVPacket *av_packet = av_packet_alloc();
-    AVFrame *av_frame = av_frame_alloc();
-    int ret;
-    while (isCodecInited && running) {
-        av_packet_queue->dequeue(*av_packet);
-        ret = avcodec_send_packet(codec_context, av_packet);
-        if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            cerr << "audio codec send packed failed. error code :" << ret << endl;
-            continue;
-        }
-
-        while (ret >= 0) {
-            ret = avcodec_receive_frame(codec_context, av_frame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                //receive frame end
-                break;
-            }
-
-            PCMItem pcm_item;
-            getPCMData(av_frame, &pcm_item);
-            //enqueue
-            pcm_queue->enqueue(pcm_item);
-            av_frame_unref(av_frame);
-        }
-    }
-}
-
 void AVDecoderAudio::stop() {
     running = false;
 }
@@ -70,4 +41,11 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
     item->freq = av_frame->sample_rate;
     item->nb_samples = av_frame->nb_samples;
     item->channels = av_frame->channels;
+}
+
+void AVDecoderAudio::parseAVFrame(AVFrame *av_frame) {
+    PCMItem pcm_item;
+    getPCMData(av_frame, &pcm_item);
+    //enqueue
+    pcm_queue->enqueue(pcm_item);
 }

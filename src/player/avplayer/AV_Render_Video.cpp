@@ -20,6 +20,7 @@ bool AV_Render_Video::onUpdate() {
 bool AV_Render_Video::onRender() {
     YUVItem item;
     yuv_fileQueue->dequeue(item);
+//    std::cout << "yuv buffer size:" << yuv_fileQueue->current_size << std::endl;
 
     if(texture == nullptr) {
         openVideoDevice(item.width, item.height, item.format);

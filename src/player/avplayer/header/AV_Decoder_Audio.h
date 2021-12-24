@@ -20,8 +20,8 @@ public:
         swr_free(&swr_context);
     }
 
-    void start();
-    void stop();
+    void parseAVFrame(AVFrame *av_frame) override;
+    void stop() override;
 
     ThreadSafeQueue<PCMItem> *getPCMQueue() {
         return pcm_queue;

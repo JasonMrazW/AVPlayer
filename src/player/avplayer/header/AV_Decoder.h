@@ -46,7 +46,37 @@ public:
         return true;
     }
 
-    virtual void start() = 0;
+    void start() {
+        running = true;
+        AVPacket *av_packet = av_packet_alloc();
+        AVFrame *av_frame = av_frame_alloc();
+
+        int ret;
+        int index = 0;
+        while (isCodecInited&&running) {
+            //send pack to decoder
+            av_packet_queue->dequeue(*av_packet);
+            ret = avcodec_send_packet(codec_context,av_packet);
+            if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                cerr << "video codec send packed failed. error code :" << ret << endl;
+                continue;
+            }
+            //receive frame from decoder
+            while(ret >= 0) {
+                ret = avcodec_receive_frame(codec_context, av_frame);
+                if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                    //receive frame end
+                    break;
+                }
+
+                //get yuv data & add to yuv buffer
+                parseAVFrame(av_frame);
+                av_frame_unref(av_frame);
+            }
+        }
+    }
+
+    virtual void parseAVFrame(AVFrame *av_frame) = 0;
     virtual void stop() = 0;
 protected:
     AVStream *av_stream;

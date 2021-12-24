@@ -4,41 +4,6 @@
 
 #include "header/AV_Decoder_Video.h"
 
-
-void AVDecoderVideo::start() {
-    running = true;
-    AVPacket *av_packet = av_packet_alloc();
-    AVFrame *av_frame = av_frame_alloc();
-
-    int ret;
-    int index = 0;
-    while (isCodecInited&&running) {
-        //send pack to decoder
-        av_packet_queue->dequeue(*av_packet);
-        ret = avcodec_send_packet(codec_context,av_packet);
-        if (ret < 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            cerr << "video codec send packed failed. error code :" << ret << endl;
-            continue;
-        }
-        //receive frame from decoder
-        while(ret >= 0) {
-            ret = avcodec_receive_frame(codec_context, av_frame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                //receive frame end
-                break;
-            }
-
-            //get yuv data & add to yuv buffer
-            YUVItem temp;
-            getYUVData(av_frame, &temp);
-            temp.index =index++;
-            //送数据进buffer
-            yuv_queue->enqueue(temp);
-            av_frame_unref(av_frame);
-        }
-    }
-}
-
 void AVDecoderVideo::stop() {
     running = false;
 }
@@ -55,6 +20,22 @@ void AVDecoderVideo::getYUVData(AVFrame *in_frame, YUVItem *yuv_frame_data) {
     yuv_frame_data->pin = in_frame->width;
 
     av_frame_unref(yuv_frame);
+}
+
+//解码器吐出来的AVFrame是按显示顺序吐的，非解码顺序
+void AVDecoderVideo::parseAVFrame(AVFrame *av_frame) {
+    double time_base = av_q2d(av_stream->time_base);
+    double codec_time_base = av_q2d(codec_context->time_base);
+    cout << "dts:" << av_frame->pkt_dts << endl;
+    cout << "pts:" << av_frame->pkt_pts << endl;
+
+//    cout << "pts:" << double (av_frame->pts * time_base) << endl;
+//    cout << "pkg_pts" << double(av_frame->pkt_pts * time_base) << endl;
+    //get yuv data & add to yuv buffer
+    YUVItem temp;
+    getYUVData(av_frame, &temp);
+    //送数据进buffer
+    yuv_queue->enqueue(temp);
 }
 
 

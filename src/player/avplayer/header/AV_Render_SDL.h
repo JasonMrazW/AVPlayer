@@ -30,7 +30,7 @@ public:
     void setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
 private:
     bool running = false;
-    static const uint8_t TIME_INTERVAL = 40; //40ms
+    static const uint8_t TIME_INTERVAL = 30; //30ms
     SDL_TimerID timerId;
 
     AV_Render_Video *video_render;

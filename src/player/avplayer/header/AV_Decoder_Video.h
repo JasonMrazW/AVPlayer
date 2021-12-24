@@ -27,7 +27,7 @@ public:
         sws_freeContext(sws_context);
     };
 
-    void start() override;
+    void parseAVFrame(AVFrame *av_frame) override;
     void stop() override;
     ThreadSafeQueue<YUVItem> *getYUVQueue() {
         return yuv_queue;
