@@ -6,7 +6,6 @@
 
 AV_Player::AV_Player() {
     render = new AV_Render_SDL();
-    render->init();
     demuxer = new AVDemuxer();
 }
 
@@ -19,10 +18,10 @@ void AV_Player::start(std::string url) {
     std::thread demuxer_thread = thread(std::ref(loadDemuxerCallback), std::ref(*demuxer), url);
 
     //等待demux解码出第一帧
-    while (demuxer->getYUVBuffer() == nullptr || demuxer->getPCMBuffer() == nullptr) {
+    while (demuxer->getYUVBuffer() == nullptr || demuxer->getPCMBuffer() == nullptr || demuxer->getFPS() == 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
-
+    render->init(demuxer->getFPS());
     //将缓冲区的指针给Render，让Render知道去哪取数据
     render->setBuffer(demuxer->getYUVBuffer(), demuxer->getPCMBuffer());
     render->start();

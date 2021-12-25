@@ -14,13 +14,13 @@ AV_Render_SDL::~AV_Render_SDL() {
 }
 
 //******************public method******************
-bool AV_Render_SDL::init() {
+bool AV_Render_SDL::init(uint8_t video_fps) {
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         cerr << "init sdl failed." << strerror(errno) << endl;
         return false;
     }
     //初始化定时器，用于刷新视频帧
-    timerId = SDL_AddTimer(TIME_INTERVAL, &SDL_TimerCallback, this);
+    timerId = SDL_AddTimer(video_fps, &SDL_TimerCallback, this);
 
     //初始化Video和Audio
     audio_render = new AV_Render_Audio();
@@ -42,6 +42,7 @@ void AV_Render_SDL::start() {
     }
 
     onStop();
+    onDestroy();
 }
 
 void AV_Render_SDL::setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer) {
@@ -112,6 +113,8 @@ bool AV_Render_SDL::onStop() {
 }
 
 bool AV_Render_SDL::onDestroy() {
+    video_render->onDestroy();
+    audio_render->onDestroy();
     return true;
 }
 

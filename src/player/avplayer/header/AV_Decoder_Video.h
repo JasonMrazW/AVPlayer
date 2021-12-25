@@ -32,6 +32,9 @@ public:
     ThreadSafeQueue<YUVItem> *getYUVQueue() {
         return yuv_queue;
     }
+    uint8_t getFPS() {
+        return (uint8_t)av_q2d(codec_context->framerate);
+    }
 private:
     ThreadSafeQueue<YUVItem> *yuv_queue;
 

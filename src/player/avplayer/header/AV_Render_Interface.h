@@ -10,6 +10,8 @@ typedef  int (*LastClockTime)();
 class IAVRender {
 public:
     IAVRender() {
+        last_pts.store(0);
+        current_pts.store(0);
     }
     ~IAVRender() {
 
@@ -29,5 +31,7 @@ protected:
     std::atomic_int32_t last_pts;
     //将要渲染帧对应的pts
     std::atomic_int32_t current_pts;
+
+    double time_base;
 };
 #endif //AVPLAYER_AV_RENDER_INTERFACE_H

@@ -69,6 +69,13 @@ public:
                     //receive frame end
                     break;
                 }
+
+                if (codec_context->codec_id == AV_CODEC_ID_H264) {
+//                    cout << av_frame->pts << endl;
+//                    cout << "hour:" << int(av_frame->pts * packet_time_base)/3600 <<
+//                    "minute:" << int(av_frame->pts * packet_time_base)/60%60 <<
+//                    "seconds"<< int(av_frame->pts * packet_time_base)%3600/1000 << endl;
+                }
                 //get yuv data & add to yuv buffer
                 parseAVFrame(av_frame);
                 av_frame_unref(av_frame);

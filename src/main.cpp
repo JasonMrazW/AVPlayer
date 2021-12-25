@@ -75,7 +75,7 @@ int main() {
 //    render.start();
 
     AV_Player player;
-    player.start("resources/video/sample_2h.flv");
+    player.start("resources/video/sound_sync_test.flv");
 
 
 //    cout << last_pts << endl;

@@ -10,10 +10,11 @@ void AVDecoderVideo::stop() {
 
 void AVDecoderVideo::getYUVData(AVFrame *in_frame, YUVItem *yuv_frame_data) {
     AVFrame *yuv_frame = av_frame_alloc();
-    av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, out_buffer, video_format, codec_context->width, codec_context->height,1);
+    uint8_t * buffer = static_cast<uint8_t *>(av_malloc(buffer_size));
+    av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, buffer, video_format, codec_context->width, codec_context->height, 1);
     sws_scale(sws_context,in_frame->data,in_frame->linesize,0,in_frame->height,yuv_frame->data,yuv_frame->linesize);
 
-    yuv_frame_data->data = out_buffer;
+    yuv_frame_data->data = buffer;
     yuv_frame_data->width = in_frame->width;
     yuv_frame_data->height = in_frame->height;
     yuv_frame_data->format = ConvertUtil::AVPixFormatToSDLPixelFormat(static_cast<AVPixelFormat>(in_frame->format));

@@ -20,7 +20,7 @@ public:
     AV_Render_SDL();
     ~AV_Render_SDL();
 
-    bool init();
+    bool init(uint8_t video_fps);
 
     void start();
 

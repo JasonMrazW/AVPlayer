@@ -41,11 +41,13 @@ private:
     const int SCREEN_WIDTH     = 900;
     const int SCREEN_HEIGHT    = 600;
 
-    uint8_t *current_yuv_data = nullptr;
+    YUVItem *current_yuv_data = nullptr;
     int current_pin = 0;
     IClockCallBack *getSystemClock;
     ThreadSafeQueue<YUVItem> *yuv_fileQueue = nullptr;
     bool openVideoDevice(int width, int height, Uint32 format);
+
+    YUVItem *getNextPic();
 };
 
 

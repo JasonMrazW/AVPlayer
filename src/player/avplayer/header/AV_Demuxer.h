@@ -41,6 +41,11 @@ public:
         return audio_decoder->getPCMQueue();
     }
 
+    uint8_t getFPS() {
+        if (video_decoder == nullptr) return 0;
+
+        return video_decoder->getFPS();
+    }
 private:
     struct AVState {
         AVFormatContext *format_context = nullptr;
