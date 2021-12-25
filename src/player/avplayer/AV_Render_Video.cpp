@@ -20,6 +20,9 @@ bool AV_Render_Video::onUpdate() {
 bool AV_Render_Video::onRender() {
     YUVItem item;
     yuv_fileQueue->dequeue(item);
+    current_pts.store(item.pts);
+
+//    std::cout << getSystemClock->getMainClock() << endl;
 //    std::cout << "yuv buffer size:" << yuv_fileQueue->current_size << std::endl;
 
     if(texture == nullptr) {

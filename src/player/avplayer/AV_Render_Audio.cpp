@@ -72,7 +72,9 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
         std::cout << "pcm buffer size:" << render->pcm_queue->current_size << std::endl;
         render->audio_pos = item.data;
         render->audio_length.value = item.data_length;
+        render->current_pts.store(item.pts);
     }
+    render->last_pts.store(render->current_pts.load());
 }
 
 void AV_Render_Audio::setBuffer(ThreadSafeQueue<PCMItem> *queue) {

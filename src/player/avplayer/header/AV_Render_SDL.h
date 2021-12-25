@@ -11,10 +11,11 @@
 #include "AV_Render_Audio.h"
 #include "AV_Render_Interface.h"
 #include "AV_Render_Video.h"
+#include "AV_Render_IClockCallback.h"
 
 #define SDL_USER_EVENT_ON_FRAME_AVAILABLE 0x04
 
-class AV_Render_SDL {
+class AV_Render_SDL:IClockCallBack {
 public:
     AV_Render_SDL();
     ~AV_Render_SDL();
@@ -28,6 +29,8 @@ public:
     static Uint32 SDL_TimerCallback(Uint32 interval, void *param);
 
     void setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
+
+    int32_t getMainClock() override;
 private:
     bool running = false;
     static const uint8_t TIME_INTERVAL = 30; //30ms

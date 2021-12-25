@@ -77,6 +77,8 @@ int main() {
     AV_Player player;
     player.start("resources/video/sample_2h.flv");
 
+
+//    cout << last_pts << endl;
     //start image player
 //    SDLImagePlayer player;
 //    IImageParser *parser = new YUVImageParser();

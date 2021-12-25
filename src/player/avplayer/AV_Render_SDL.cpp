@@ -7,7 +7,6 @@
 using namespace std;
 
 AV_Render_SDL::AV_Render_SDL() {
-
 }
 
 AV_Render_SDL::~AV_Render_SDL() {
@@ -25,7 +24,7 @@ bool AV_Render_SDL::init() {
 
     //初始化Video和Audio
     audio_render = new AV_Render_Audio();
-    video_render = new AV_Render_Video();
+    video_render = new AV_Render_Video(this);
     return true;
 }
 
@@ -121,4 +120,8 @@ bool AV_Render_SDL::onRender() {
     video_render->onRender();
     audio_render->onRender();
     return true;
+}
+
+int AV_Render_SDL::getMainClock() {
+    return audio_render->getLastPts();
 }
