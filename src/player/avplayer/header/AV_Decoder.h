@@ -43,6 +43,7 @@ public:
             return false;
         }
 
+        packet_time_base = av_q2d(av_stream->time_base);
         return true;
     }
 
@@ -68,7 +69,6 @@ public:
                     //receive frame end
                     break;
                 }
-
                 //get yuv data & add to yuv buffer
                 parseAVFrame(av_frame);
                 av_frame_unref(av_frame);
@@ -83,6 +83,9 @@ protected:
     AVCodec *codec;
     AVCodecContext *codec_context;
     ThreadSafeQueue<AVPacket> *av_packet_queue;
+
+    //pts/dts的时间单位
+    double packet_time_base;
 
     atomic_bool running;
     atomic_bool isCodecInited;

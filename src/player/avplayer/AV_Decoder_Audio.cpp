@@ -41,6 +41,8 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
     item->freq = av_frame->sample_rate;
     item->nb_samples = av_frame->nb_samples;
     item->channels = av_frame->channels;
+    item->pts = av_frame->pts;
+    item->time_base = packet_time_base;
 }
 
 void AVDecoderAudio::parseAVFrame(AVFrame *av_frame) {

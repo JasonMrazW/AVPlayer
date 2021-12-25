@@ -75,7 +75,7 @@ int main() {
 //    render.start();
 
     AV_Player player;
-    player.start("resources/video/sample.flv");
+    player.start("resources/video/sample_2h.flv");
 
     //start image player
 //    SDLImagePlayer player;

@@ -18,19 +18,18 @@ void AVDecoderVideo::getYUVData(AVFrame *in_frame, YUVItem *yuv_frame_data) {
     yuv_frame_data->height = in_frame->height;
     yuv_frame_data->format = ConvertUtil::AVPixFormatToSDLPixelFormat(static_cast<AVPixelFormat>(in_frame->format));
     yuv_frame_data->pin = in_frame->width;
+    yuv_frame_data->pts = in_frame->pts;
+    yuv_frame_data->time_base = packet_time_base;
 
     av_frame_unref(yuv_frame);
 }
 
 //解码器吐出来的AVFrame是按显示顺序吐的，非解码顺序
 void AVDecoderVideo::parseAVFrame(AVFrame *av_frame) {
-    double time_base = av_q2d(av_stream->time_base);
-    double codec_time_base = av_q2d(codec_context->time_base);
-    cout << "dts:" << av_frame->pkt_dts << endl;
-    cout << "pts:" << av_frame->pkt_pts << endl;
-
-//    cout << "pts:" << double (av_frame->pts * time_base) << endl;
-//    cout << "pkg_pts" << double(av_frame->pkt_pts * time_base) << endl;
+//    double time_base = av_q2d(av_stream->time_base);
+//    double codec_time_base = av_q2d(codec_context->time_base);
+//    cout << "pts:" << double (av_frame->pts * codec_time_base) << endl;
+//    cout << "pkg_pts" << double(codec_time_base) << endl;
     //get yuv data & add to yuv buffer
     YUVItem temp;
     getYUVData(av_frame, &temp);
