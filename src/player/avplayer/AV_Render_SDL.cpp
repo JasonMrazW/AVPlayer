@@ -131,6 +131,6 @@ bool AV_Render_SDL::onRender() {
     return true;
 }
 
-int AV_Render_SDL::getMainClock() {
-    return audio_render->getLastPts();
+Clock *AV_Render_SDL::getMainClock() {
+    return audio_render->getMasterClock();
 }

@@ -7,7 +7,7 @@ using namespace std;
 
 
 AV_Render_Audio::AV_Render_Audio() {
-
+    master_clock = new Clock();
 }
 
 AV_Render_Audio::~AV_Render_Audio() {
@@ -92,4 +92,8 @@ bool AV_Render_Audio::onUpdate() {
 }
 bool AV_Render_Audio::onRender() {
     return false;
+}
+
+Clock *AV_Render_Audio::getMasterClock() {
+    return master_clock;
 }

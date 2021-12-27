@@ -6,7 +6,8 @@
 #define AVPLAYER_AV_RENDER_INTERFACE_H
 #include <iostream>
 #include "SDL.h"
-typedef  int (*LastClockTime)();
+#include "AV_Render_IClockCallback.h"
+
 class IAVRender {
 public:
     IAVRender() {

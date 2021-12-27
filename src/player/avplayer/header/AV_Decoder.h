@@ -15,6 +15,7 @@ extern "C" {
     #include <libswresample/swresample.h>
 };
 
+
 class I_AVDecoder {
 public:
     I_AVDecoder(AVFormatContext *formatContext, AVStream *stream, ThreadSafeQueue<AVPacket> *safeQueue):format_context(formatContext),av_stream(stream), av_packet_queue(safeQueue) {

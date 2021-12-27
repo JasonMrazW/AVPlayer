@@ -30,7 +30,7 @@ public:
 
     void setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
 
-    int32_t getMainClock() override;
+    Clock *getMainClock() override;
 private:
     bool running = false;
     static const uint8_t TIME_INTERVAL = 30; //30ms

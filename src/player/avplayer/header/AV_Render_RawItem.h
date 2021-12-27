@@ -13,6 +13,7 @@ struct PCMItem {
     uint8_t channels;
     double pts;
     double time_base;
+    double audio_clock;
 };
 
 struct YUVItem {

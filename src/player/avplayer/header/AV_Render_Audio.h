@@ -8,6 +8,7 @@
 #include "SDL.h"
 #include "../../../thread/ThreadSafeQueue.h"
 #include "AV_Render_RawItem.h"
+#include "AV_Render_IClockCallback.h"
 
 typedef struct Audio_Render_Parameters {
     SDL_AudioFormat audio_format;
@@ -31,12 +32,15 @@ public:
     static void fillDataCallBack(void *userdata, uint8_t *stream, int len);
 
     void setBuffer(ThreadSafeQueue<PCMItem> *queue);
+
+    Clock *getMasterClock();
 private:
     SDL_AudioSpec *audioSpec;
     SDL_AudioDeviceID audioDeviceId = 0;
     uint8_t audioFormat;
     SDL_atomic_t  audio_length; // audio file length
     uint8_t *audio_pos; //current position
+    Clock *master_clock;
 
     ThreadSafeQueue<PCMItem> *pcm_queue = nullptr;
     bool openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_samples, int freq, uint8_t channels);
