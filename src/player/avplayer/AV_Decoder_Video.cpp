@@ -19,7 +19,7 @@ void AVDecoderVideo::getYUVData(AVFrame *in_frame, YUVItem *yuv_frame_data) {
     yuv_frame_data->height = in_frame->height;
     yuv_frame_data->format = ConvertUtil::AVPixFormatToSDLPixelFormat(static_cast<AVPixelFormat>(in_frame->format));
     yuv_frame_data->pin = in_frame->width;
-    yuv_frame_data->pts = in_frame->pts;
+    yuv_frame_data->pts = in_frame->best_effort_timestamp * packet_time_base; //以秒为单位的pts
     yuv_frame_data->time_base = packet_time_base;
 
     av_frame_unref(yuv_frame);
@@ -34,6 +34,7 @@ void AVDecoderVideo::parseAVFrame(AVFrame *av_frame) {
     //get yuv data & add to yuv buffer
     YUVItem temp;
     getYUVData(av_frame, &temp);
+
     //送数据进buffer
     yuv_queue->enqueue(temp);
 }

@@ -10,7 +10,7 @@
 
 class AVDecoderVideo : public I_AVDecoder{
 public:
-    AVDecoderVideo(AVStream *stream, ThreadSafeQueue<AVPacket> *safeQueue): I_AVDecoder(stream, safeQueue) {
+    AVDecoderVideo(AVFormatContext *context, AVStream *stream, ThreadSafeQueue<AVPacket> *safeQueue): I_AVDecoder(context, stream, safeQueue) {
         yuv_queue = new ThreadSafeQueue<YUVItem>(50);
         //根据图像格式，计算出一帧图像的大小
         video_format = static_cast<AVPixelFormat>(stream->codecpar->format);

@@ -45,11 +45,11 @@ void AVDemuxer::start(const char * url) {
     audio_packet_queue = new ThreadSafeQueue<AVPacket>(100*4);
 
     //启动图像解码器
-    video_decoder = new AVDecoderVideo(current_state->video_stream, video_packet_queue);
+    video_decoder = new AVDecoderVideo(current_state->format_context, current_state->video_stream, video_packet_queue);
     video_decode_thread = thread(std::ref(loadVideoDecoderThreadCallback),std::ref(video_decoder));
 
     //启动音频解码器
-    audio_decoder = new AVDecoderAudio(current_state->audio_stream, audio_packet_queue);
+    audio_decoder = new AVDecoderAudio(current_state->format_context, current_state->audio_stream, audio_packet_queue);
     audio_decode_thread = thread(std::ref(loadAudioDecoderThreadCallback), std::ref(audio_decoder));
 
     readAVPackets(current_state->format_context, current_state);

@@ -17,8 +17,10 @@ extern "C" {
 
 class I_AVDecoder {
 public:
-    I_AVDecoder(AVStream *stream, ThreadSafeQueue<AVPacket> *safeQueue):av_stream(stream), av_packet_queue(safeQueue) {
+    I_AVDecoder(AVFormatContext *formatContext, AVStream *stream, ThreadSafeQueue<AVPacket> *safeQueue):format_context(formatContext),av_stream(stream), av_packet_queue(safeQueue) {
         isCodecInited = initCodec(stream,&codec, &codec_context);
+        start_pts = AV_NOPTS_VALUE;
+        next_pts = AV_NOPTS_VALUE;
     }
     ~I_AVDecoder() {
         av_stream = nullptr;
@@ -44,6 +46,11 @@ public:
         }
 
         packet_time_base = av_q2d(av_stream->time_base);
+        if ((format_context->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK))
+        && !format_context->iformat->read_seek) {
+            start_pts = av_stream->start_time;
+            start_pts_tb = av_stream->time_base;
+        }
         return true;
     }
 
@@ -70,12 +77,7 @@ public:
                     break;
                 }
 
-                if (codec_context->codec_id == AV_CODEC_ID_H264) {
-//                    cout << av_frame->pts << endl;
-//                    cout << "hour:" << int(av_frame->pts * packet_time_base)/3600 <<
-//                    "minute:" << int(av_frame->pts * packet_time_base)/60%60 <<
-//                    "seconds"<< int(av_frame->pts * packet_time_base)%3600/1000 << endl;
-                }
+
                 //get yuv data & add to yuv buffer
                 parseAVFrame(av_frame);
                 av_frame_unref(av_frame);
@@ -89,10 +91,16 @@ protected:
     AVStream *av_stream;
     AVCodec *codec;
     AVCodecContext *codec_context;
+    AVFormatContext *format_context;
     ThreadSafeQueue<AVPacket> *av_packet_queue;
 
     //pts/dts的时间单位
     double packet_time_base;
+
+    int64_t start_pts;
+    AVRational start_pts_tb;
+    int64_t next_pts;
+    AVRational next_pts_tb;
 
     atomic_bool running;
     atomic_bool isCodecInited;

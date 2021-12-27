@@ -28,9 +28,9 @@ public:
     }
 protected:
     //上一个已渲染帧对应的pts
-    std::atomic_int32_t last_pts;
+    std::atomic<double> last_pts;
     //将要渲染帧对应的pts
-    std::atomic_int32_t current_pts;
+    std::atomic<double> current_pts;
 
     double time_base;
 };

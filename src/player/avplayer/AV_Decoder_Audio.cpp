@@ -36,18 +36,35 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
         return;
     }
 
+    AVRational tb = (AVRational){1, av_frame->sample_rate};
+    if (av_frame->pts != AV_NOPTS_VALUE) {
+        //转换为跟采样率有关的时间
+        av_frame->pts = av_rescale_q(av_frame->pts, av_stream->time_base, tb);
+    } else if (next_pts != AV_NOPTS_VALUE){
+        av_frame->pts = av_rescale_q(next_pts, next_pts_tb, tb);
+    }
+
+    if (av_frame->pts != AV_NOPTS_VALUE) {
+        next_pts = av_frame->pts + av_frame->nb_samples;
+        next_pts_tb = tb;
+        cout << "next pts:" << next_pts << endl;
+    }
+
+
     item->data_length = buffer_size;
     item->audio_format = ConvertUtil::AVSampleFormatToSDLAudioFormat(out_format);
     item->freq = av_frame->sample_rate;
     item->nb_samples = av_frame->nb_samples;
     item->channels = av_frame->channels;
-    item->pts = av_frame->pts;
+    item->pts = av_frame->pts * packet_time_base; //换算成秒为单位
     item->time_base = packet_time_base;
 }
 
 void AVDecoderAudio::parseAVFrame(AVFrame *av_frame) {
     PCMItem pcm_item;
     getPCMData(av_frame, &pcm_item);
+//    cout << "audio pts:" << pcm_item.pts << endl;
+
     //enqueue
     pcm_queue->enqueue(pcm_item);
 }

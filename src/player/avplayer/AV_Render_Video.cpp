@@ -27,7 +27,7 @@ bool AV_Render_Video::onUpdate() {
     if(texture == nullptr) {
         openVideoDevice(current_yuv_data->width, current_yuv_data->height, current_yuv_data->format);
     }
-    cout << "data address:" << &(current_yuv_data->data) << endl;
+//    cout << "data address:" << &(current_yuv_data->data) << endl;
 
     return true;
 }
@@ -86,7 +86,7 @@ YUVItem *AV_Render_Video::getNextPic() {
         return item;
     }
     delay = (current_pts - getSystemClock->getMainClock()) * time_base * 1000;
-    cout << "delay1:" << delay << endl;
+//    cout << "delay1:" << delay << endl;
     if (delay > 48) {
         return nullptr;
     }
@@ -98,7 +98,7 @@ YUVItem *AV_Render_Video::getNextPic() {
 
         //两者间隔小于24ms，换算出来就是delay * packet_time_base * 1000 < 24
         delay = (item->pts - getSystemClock->getMainClock()) * item->time_base * 1000 ;
-        cout << "delay2:" << delay << endl;
+//        cout << "delay2:" << delay << endl;
         if (delay > 100) {
             return nullptr;
         }

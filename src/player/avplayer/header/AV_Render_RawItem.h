@@ -11,7 +11,7 @@ struct PCMItem {
     uint16_t nb_samples;
     uint32_t freq;
     uint8_t channels;
-    int32_t pts;
+    double pts;
     double time_base;
 };
 
@@ -21,7 +21,7 @@ struct YUVItem {
     int height; //分辨率高
     uint32_t format; //文件格式
     int pin;
-    int32_t pts;
+    double pts;
     double time_base;
 };
 #endif //AVPLAYER_AV_RENDER_RAWITEM_H

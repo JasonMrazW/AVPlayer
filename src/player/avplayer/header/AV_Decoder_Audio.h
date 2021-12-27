@@ -11,7 +11,7 @@
 
 class AVDecoderAudio : public I_AVDecoder{
 public:
-    AVDecoderAudio(AVStream *avStream, ThreadSafeQueue<AVPacket> *safeQueue): I_AVDecoder(avStream, safeQueue) {
+    AVDecoderAudio(AVFormatContext *context, AVStream *avStream, ThreadSafeQueue<AVPacket> *safeQueue): I_AVDecoder(context, avStream, safeQueue) {
         init();
     }
 
