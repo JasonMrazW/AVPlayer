@@ -14,26 +14,26 @@ bool AV_Render_Video::init() {
 }
 
 bool AV_Render_Video::onUpdate() {
-    return false;
-}
-
-bool AV_Render_Video::onRender() {
     YUVItem *item = getNextPic();
-//    cout << "item is null? " << item << endl;
+    //    cout << "item is null? " << item << endl;
     if (item != nullptr) {
         current_yuv_data = item;
     } else {
-//        cout << "empty" <<endl;
+        //        cout << "empty" <<endl;
     }
-//    std::cout << getSystemClock->getMainClock() << endl;
-//    std::cout << "yuv buffer size:" << yuv_fileQueue->current_size << std::endl;
+    //    std::cout << getSystemClock->getMainClock() << endl;
+    //    std::cout << "yuv buffer size:" << yuv_fileQueue->current_size << std::endl;
 
     if(texture == nullptr) {
         openVideoDevice(current_yuv_data->width, current_yuv_data->height, current_yuv_data->format);
     }
+    cout << "data address:" << &(current_yuv_data->data) << endl;
 
+    return true;
+}
+
+bool AV_Render_Video::onRender() {
     try {
-        cout << "data address:" << &(current_yuv_data->data) << endl;
         SDL_UpdateTexture(texture, nullptr, current_yuv_data->data, current_yuv_data->width);
 
         SDL_RenderClear(renderer);

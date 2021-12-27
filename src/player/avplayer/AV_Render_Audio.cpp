@@ -80,8 +80,7 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
 void AV_Render_Audio::setBuffer(ThreadSafeQueue<PCMItem> *queue) {
     pcm_queue = queue;
 }
-
-bool AV_Render_Audio::onRender() {
+bool AV_Render_Audio::onUpdate() {
     if (audioDeviceId < 2) {
         PCMItem item;
         pcm_queue->dequeue(item);
@@ -89,5 +88,8 @@ bool AV_Render_Audio::onRender() {
         audio_length.value = item.data_length;
         openAudioDevice(item.audio_format, item.nb_samples, item.freq, item.channels);
     }
+    return true;
+}
+bool AV_Render_Audio::onRender() {
     return false;
 }

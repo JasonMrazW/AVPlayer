@@ -79,6 +79,7 @@ bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
         SDL_UserEvent userEvent = sdlEvent->user;
         switch (userEvent.code) {
             case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
+                onUpdate();
                 onRender();
                 break;
             default:
@@ -116,6 +117,11 @@ bool AV_Render_SDL::onDestroy() {
     video_render->onDestroy();
     audio_render->onDestroy();
     return true;
+}
+
+void AV_Render_SDL::onUpdate() {
+    video_render->onUpdate();
+    audio_render->onUpdate();
 }
 
 //控制视频的帧率

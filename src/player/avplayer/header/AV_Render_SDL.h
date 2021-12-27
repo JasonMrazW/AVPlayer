@@ -49,6 +49,7 @@ private:
 
     bool onDestroy();
 
+    void onUpdate();
 };
 
 #endif //AVPLAYER_AV_RENDER_SDL_H
