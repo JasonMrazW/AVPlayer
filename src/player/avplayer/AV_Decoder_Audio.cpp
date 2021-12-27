@@ -53,7 +53,10 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
 
 
     item->data_length = buffer_size;
-    item->audio_format = ConvertUtil::AVSampleFormatToSDLAudioFormat(out_format);
+    item->sdl_audio_format = ConvertUtil::AVSampleFormatToSDLAudioFormat(out_format);
+    item->byte_per_buffer = av_samples_get_buffer_size(NULL, av_frame->channels,
+                                                       av_frame->sample_rate,
+                                                       out_format, 1);
     item->freq = av_frame->sample_rate;
     item->nb_samples = av_frame->nb_samples;
     item->channels = av_frame->channels;
@@ -66,7 +69,7 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
 void AVDecoderAudio::parseAVFrame(AVFrame *av_frame) {
     PCMItem pcm_item;
     getPCMData(av_frame, &pcm_item);
-    cout << "audio pts:" << pcm_item.pts << endl;
+//    cout << "audio pts:" << pcm_item.pts << endl;
     //enqueue
     pcm_queue->enqueue(pcm_item);
 }

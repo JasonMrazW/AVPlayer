@@ -5,6 +5,9 @@
 #include "header/AV_Render_Audio.h"
 using namespace std;
 
+uint32_t AV_Render_Audio::hw_bytes_per_sec; //音频设备硬件缓冲区大小
+uint32_t AV_Render_Audio::bytes_per_sec; //每一帧音频大小
+uint64_t AV_Render_Audio::audio_callback_time; //音频设备回调时间
 
 AV_Render_Audio::AV_Render_Audio() {
     master_clock = new Clock();
@@ -45,16 +48,24 @@ bool AV_Render_Audio::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_
     audioSpec->callback = &fillDataCallBack;
     audioSpec->userdata = this;
 
-    if ((audioDeviceId = SDL_OpenAudioDevice(nullptr,0,audioSpec,nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE)) < 2) {
+    SDL_AudioSpec spec;
+
+    if ((audioDeviceId = SDL_OpenAudioDevice(nullptr,0,audioSpec,&spec, SDL_AUDIO_ALLOW_ANY_CHANGE)) < 2) {
         cerr << "SDL_Init Audio Device Failed: " << SDL_GetError() << endl;
         return false;
     }
+
+    hw_bytes_per_sec = spec.size;
+//    cout << "hw size:" << hw_bytes_per_sec << endl;
     SDL_PauseAudioDevice(audioDeviceId, 0);
 }
 
 //音频设备的回调
 void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len) {
     SDL_memset(stream, 0, len);
+
+    //获取的是一个相对时间，不是绝对时间
+    audio_callback_time = av_gettime_relative();
 
     AV_Render_Audio *render = static_cast<AV_Render_Audio *>(userdata);
 
@@ -65,6 +76,14 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
     render->audio_pos +=len;
     render->audio_length.value -=len;
 
+    if (!isnan(render->current_audio_clock)) {
+        setClockAtTime(render->master_clock,
+                       render->current_audio_clock -
+                       (double)(2 * hw_bytes_per_sec)
+                       / bytes_per_sec,
+                       audio_callback_time/1000000.0);
+    }
+
     //取下个item
     if(render->audio_length.value == 0) {
         PCMItem item;
@@ -73,6 +92,7 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
         render->audio_pos = item.data;
         render->audio_length.value = item.data_length;
         render->current_pts.store(item.pts);
+        render->current_audio_clock = item.audio_clock;
     }
     render->last_pts.store(render->current_pts.load());
 }
@@ -86,7 +106,9 @@ bool AV_Render_Audio::onUpdate() {
         pcm_queue->dequeue(item);
         audio_pos = item.data;
         audio_length.value = item.data_length;
-        openAudioDevice(item.audio_format, item.nb_samples, item.freq, item.channels);
+        current_audio_clock = item.audio_clock;
+        bytes_per_sec = item.byte_per_buffer;
+        openAudioDevice(item.sdl_audio_format, item.nb_samples, item.freq, item.channels);
     }
     return true;
 }
@@ -96,4 +118,11 @@ bool AV_Render_Audio::onRender() {
 
 Clock *AV_Render_Audio::getMasterClock() {
     return master_clock;
+}
+
+void AV_Render_Audio::setClockAtTime(Clock *c, double pts, double time)
+{
+    c->pts = pts;
+    c->last_updated = time;
+    c->pts_drift = c->pts - time;
 }

@@ -7,7 +7,8 @@
 struct PCMItem {
     uint8_t *data = nullptr;
     uint32_t data_length = 0;
-    uint16_t audio_format;
+    uint16_t sdl_audio_format;
+    uint32_t byte_per_buffer;
     uint16_t nb_samples;
     uint32_t freq;
     uint8_t channels;
