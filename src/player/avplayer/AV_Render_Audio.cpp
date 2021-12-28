@@ -63,7 +63,7 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
     AV_Render_Audio *render = static_cast<AV_Render_Audio *>(userdata);
 
     //获取的是一个相对时间，不是绝对时间
-    render->audio_callback_time = av_gettime_relative();
+    render->audio_callback_time = SyncClock::getCurrentRelativeTime();
 
     len = len > render->audio_length.value ? render->audio_length.value : len;
 
@@ -72,15 +72,14 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
     render->audio_pos +=len;
     render->audio_length.value -=len;
 
-    double last_clock_time = SyncClock::getClockTime(render->master_clock);
     if (!isnan(render->current_audio_clock)) {
         SyncClock::setClockAtTime(render->master_clock,
                        render->current_audio_clock -
                        (double)(2 * render->hw_bytes_per_sec)
                        / render->bytes_per_sec,
-                       render->audio_callback_time/1000000.0);
+                       render->audio_callback_time);
         //todo 补充同步外部时钟，暂不做实现
-        clog << "audio clock distance:" << SyncClock::getClockTime(render->master_clock)-last_clock_time << endl;
+        clog << "clock distance:" << (SyncClock::getClockTime(render->master_clock) - render->last_audio_clock) * 1000 << "ms" << endl;
     }
 
     //取下个item
@@ -92,7 +91,8 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
         render->audio_length.value = item.data_length;
         render->current_pts.store(item.pts);
         //更新当前item的audio_clock理论值
-        render->current_audio_clock = item.audio_clock;
+        render->current_audio_clock = item.next_audio_clock;
+        render->last_audio_clock = SyncClock::getClockTime(render->master_clock);
     }
     render->last_pts.store(render->current_pts.load());
 }
@@ -106,7 +106,8 @@ bool AV_Render_Audio::onUpdate() {
         pcm_queue->dequeue(item);
         audio_pos = item.data;
         audio_length.value = item.data_length;
-        current_audio_clock = item.audio_clock;
+        current_audio_clock = item.next_audio_clock;
+        last_audio_clock = SyncClock::getClockTime(master_clock);
         bytes_per_sec = item.byte_per_buffer;
         openAudioDevice(item.sdl_audio_format, item.nb_samples, item.freq, item.channels);
     }

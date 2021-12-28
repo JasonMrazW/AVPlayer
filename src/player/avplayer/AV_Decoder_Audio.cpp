@@ -61,8 +61,8 @@ void AVDecoderAudio::getPCMData(AVFrame *av_frame, PCMItem *item) {
     item->nb_samples = av_frame->nb_samples;
     item->channels = av_frame->channels;
     item->pts = av_frame->pts * av_q2d(tb); //换算成秒为单位
-    //当前时钟
-    item->audio_clock = item->pts + double(av_frame->nb_samples/av_frame->sample_rate);
+    //下一帧的理论时钟
+    item->next_audio_clock = item->pts + double(av_frame->nb_samples / av_frame->sample_rate);
     item->time_base = packet_time_base;
 }
 
