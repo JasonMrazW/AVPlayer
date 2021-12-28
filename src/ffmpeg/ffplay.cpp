@@ -1378,6 +1378,7 @@ static double get_clock(Clock *c)
         return c->pts;
     } else {
         double time = av_gettime_relative() / 1000000.0;
+        //表示从上一次的时间节点+当前时间
         return c->pts_drift + time - (time - c->last_updated) * (1.0 - c->speed);
     }
 }

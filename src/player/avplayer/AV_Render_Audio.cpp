@@ -5,12 +5,9 @@
 #include "header/AV_Render_Audio.h"
 using namespace std;
 
-uint32_t AV_Render_Audio::hw_bytes_per_sec; //音频设备硬件缓冲区大小
-uint32_t AV_Render_Audio::bytes_per_sec; //每一帧音频大小
-uint64_t AV_Render_Audio::audio_callback_time; //音频设备回调时间
-
 AV_Render_Audio::AV_Render_Audio() {
     master_clock = new Clock();
+    SyncClock::initClock(master_clock);
 }
 
 AV_Render_Audio::~AV_Render_Audio() {
@@ -63,11 +60,10 @@ bool AV_Render_Audio::openAudioDevice(SDL_AudioFormat audio_format, uint16_t nb_
 //音频设备的回调
 void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len) {
     SDL_memset(stream, 0, len);
+    AV_Render_Audio *render = static_cast<AV_Render_Audio *>(userdata);
 
     //获取的是一个相对时间，不是绝对时间
-    audio_callback_time = av_gettime_relative();
-
-    AV_Render_Audio *render = static_cast<AV_Render_Audio *>(userdata);
+    render->audio_callback_time = av_gettime_relative();
 
     len = len > render->audio_length.value ? render->audio_length.value : len;
 
@@ -76,12 +72,15 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
     render->audio_pos +=len;
     render->audio_length.value -=len;
 
+    double last_clock_time = SyncClock::getClockTime(render->master_clock);
     if (!isnan(render->current_audio_clock)) {
-        setClockAtTime(render->master_clock,
+        SyncClock::setClockAtTime(render->master_clock,
                        render->current_audio_clock -
-                       (double)(2 * hw_bytes_per_sec)
-                       / bytes_per_sec,
-                       audio_callback_time/1000000.0);
+                       (double)(2 * render->hw_bytes_per_sec)
+                       / render->bytes_per_sec,
+                       render->audio_callback_time/1000000.0);
+        //todo 补充同步外部时钟，暂不做实现
+        clog << "audio clock distance:" << SyncClock::getClockTime(render->master_clock)-last_clock_time << endl;
     }
 
     //取下个item
@@ -92,6 +91,7 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
         render->audio_pos = item.data;
         render->audio_length.value = item.data_length;
         render->current_pts.store(item.pts);
+        //更新当前item的audio_clock理论值
         render->current_audio_clock = item.audio_clock;
     }
     render->last_pts.store(render->current_pts.load());
@@ -120,9 +120,3 @@ Clock *AV_Render_Audio::getMasterClock() {
     return master_clock;
 }
 
-void AV_Render_Audio::setClockAtTime(Clock *c, double pts, double time)
-{
-    c->pts = pts;
-    c->last_updated = time;
-    c->pts_drift = c->pts - time;
-}
