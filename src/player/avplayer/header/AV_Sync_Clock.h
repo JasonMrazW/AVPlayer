@@ -6,6 +6,7 @@
 #define AVPLAYER_AV_SYNC_CLOCK_H
 extern "C" {
 #include "libavutil/time.h"
+#include "libavutil/common.h"
 };
 typedef struct Clock {
     double pts;           /* clock base */
@@ -78,6 +79,29 @@ public:
      */
     static double getCurrentRelativeTime() {
         return av_gettime_relative()/MicroSecondToSecondUnit;
+    }
+
+    /**
+     * 矫正视频的延迟时间
+     * @param video_clock
+     * @param audio_clock
+     * @param video_pts
+     * @return
+     */
+    static double computeVideoFrameDelay(Clock *video_clock, Clock *audio_clock, double delay) {
+        double av_diff = getClockTime(video_clock) - getClockTime(audio_clock);
+        //保证delay的阈值是在AV_SYNC_THRESHOLD_MIN~AV_SYNC_THRESHOLD_MAX之间
+        double sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
+
+        if (av_diff <= -sync_threshold) {//视频落后于音频
+            delay = FFMAX(0, delay + av_diff);
+        } else if(av_diff >= sync_threshold && delay > AV_SYNC_FRAMEDUP_THRESHOLD) {//视频超前太多了，delay一步到位
+            delay += av_diff;
+        } else if (av_diff >= sync_threshold) {
+            delay *= 2;
+        }
+
+        return delay;
     }
 };
 #endif //AVPLAYER_AV_SYNC_CLOCK_H

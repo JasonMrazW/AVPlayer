@@ -8,19 +8,14 @@
 #include "../../../thread/ThreadSafeQueue.h"
 #include "AV_Render_RawItem.h"
 #include "AV_Render_IClockCallback.h"
-
-typedef struct Video_Render_Parameters {
-    uint8_t *data; // 文件二进制内容
-    int width; //分辨率宽
-    int height; //分辨率高
-    Uint32 format; //文件格式
-    int pin;
-}VideoRenderParameters;
+#include "AV_Sync_Clock.h"
 
 class AV_Render_Video : public IAVRender{
 public:
     AV_Render_Video(IClockCallBack *callback): IAVRender() {
         getSystemClock = callback;
+        video_clock = new Clock();
+        SyncClock::initClock(video_clock);
     }
     ~AV_Render_Video() {
         onDestroy();
@@ -44,6 +39,8 @@ private:
     YUVItem *current_yuv_data = nullptr;
     int current_pin = 0;
     IClockCallBack *getSystemClock;
+    Clock *video_clock;
+
     ThreadSafeQueue<YUVItem> *yuv_fileQueue = nullptr;
     bool openVideoDevice(int width, int height, Uint32 format);
 
