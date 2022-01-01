@@ -26,14 +26,11 @@ public:
 
     void sendEvent(uint32_t event_type, void *data);
 
-    static Uint32 SDL_TimerCallback(Uint32 interval, void *param);
-
     void setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQueue<PCMItem> *pcm_buffer);
 
     Clock *getMainClock() override;
 private:
     bool running = false;
-    static const uint8_t TIME_INTERVAL = 30; //30ms
     double refresh_rate = 0;
 
     SDL_TimerID timerId;

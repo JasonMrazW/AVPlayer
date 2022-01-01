@@ -52,13 +52,6 @@ void AV_Render_SDL::setBuffer(ThreadSafeQueue<YUVItem> *yuv_buffer, ThreadSafeQu
     audio_render->setBuffer(pcm_buffer);
 }
 
-Uint32 AV_Render_SDL::SDL_TimerCallback(Uint32 interval, void *param) {
-
-    AV_Render_SDL *sdl_render = static_cast<AV_Render_SDL *>(param);
-    sdl_render->sendEvent(SDL_USER_EVENT_ON_FRAME_AVAILABLE, nullptr);
-    return (interval);
-}
-
 void AV_Render_SDL::sendEvent(uint32_t event_type, void *data) {
 
     Uint32 myEventType = SDL_RegisterEvents(1);
