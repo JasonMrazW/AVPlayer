@@ -19,7 +19,7 @@ public:
     }
     virtual bool init() = 0;
 
-    virtual bool onUpdate() = 0;
+    virtual bool onUpdate(double *remaining_time) = 0;
     virtual bool onRender() = 0;
     virtual bool onStop() = 0;
     virtual bool onDestroy() = 0;

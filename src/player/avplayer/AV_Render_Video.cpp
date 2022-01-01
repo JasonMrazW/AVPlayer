@@ -13,14 +13,15 @@ bool AV_Render_Video::init() {
     return true;
 }
 
-bool AV_Render_Video::onUpdate() {
-    YUVItem *item = getNextPic();
+bool AV_Render_Video::onUpdate(double *remaining_time) {
+    YUVItem *item = getNextPic(remaining_time);
+
     //    cout << "item is null? " << item << endl;
     if (item != nullptr) {
         current_yuv_data = item;
-    } else {
-        //        cout << "empty" <<endl;
     }
+
+
     //    std::cout << getSystemClock->getMainClock() << endl;
     //    std::cout << "yuv buffer size:" << yuv_fileQueue->current_size << std::endl;
 
@@ -74,37 +75,53 @@ void AV_Render_Video::setBuffer(ThreadSafeQueue<YUVItem> *queue) {
     yuv_fileQueue = queue;
 }
 
-YUVItem *AV_Render_Video::getNextPic() {
-    double delay = 0;
+YUVItem *AV_Render_Video::getNextPic(double *remaining_time) {
     YUVItem *item = new YUVItem();
+    if (current_yuv_data == nullptr) { //第一帧
+        yuv_fileQueue->dequeue(*item);
+        current_yuv_data = item;
+    } else {
+        //只取当前队列里即将显示的一帧，但是不出队
+        yuv_fileQueue->getFront(*item);
+    }
+
+    if (frame_timer == 0) {
+        frame_timer = SyncClock::getCurrentRelativeTime();
+    }
+
+    //计算当前帧于上一帧的差值
+    double ideal_duration = item->pts - current_yuv_data->pts;
+    //计算矫正后的差值
+    double delay = SyncClock::computeVideoFrameDelay(video_clock, getSystemClock->getMainClock(), ideal_duration);
+
+    double current_time = SyncClock::getCurrentRelativeTime();
+    //还没到要显示的时间，继续显示上一帧
+    if (current_time < frame_timer + delay) {
+        *remaining_time = FFMIN(frame_timer + delay - current_time, *remaining_time);
+        return nullptr;
+    }
+
+    frame_timer += delay;
+    //矫正frame_timer，如果落后太多，就直接更新成当前时间
+    if (delay > 0 && current_time - frame_timer > AV_SYNC_THRESHOLD_MAX) {
+        frame_timer = current_time;
+    }
+
+    //更新video的时钟，基于当前帧的pts
+    SyncClock::setClockAtTime(video_clock, item->pts, SyncClock::getCurrentRelativeTime());
+
+    //当前帧出队
     yuv_fileQueue->dequeue(*item);
-    current_pts.store(item->pts);
-    time_base = item->time_base;
-//    delay = (current_pts - getSystemClock->getMainClock()) * time_base * 1000;
-////    cout << "delay1:" << delay << endl;
-//    if (delay > 48) {
-//        return nullptr;
-//    }
-//    do {
-//        item = new YUVItem();
-//        yuv_fileQueue->dequeue(*item);
-////        cout << "item next:" << item << endl;
-////        cout << "main clock" << getSystemClock->getMainClock() << endl;
-//
-//        //两者间隔小于24ms，换算出来就是delay * packet_time_base * 1000 < 24
-//        delay = (item->pts - getSystemClock->getMainClock()) * item->time_base * 1000 ;
-////        cout << "delay2:" << delay << endl;
-//        if (delay > 100) {
-//            return nullptr;
-//        }
-//        int times = delay/24;
-//        while (times > 1) {
-//            item = new YUVItem();
-//            yuv_fileQueue->dequeue(*item);
-//            times--;
-//        }
-//        current_pts.store(item->pts);
-//    }while(false);
+    //再拿当前帧的下一帧，判断是否需要丢帧
+    YUVItem next_item;
+    yuv_fileQueue->getFront(next_item);
+    double next_duration = next_item.pts - item->pts;
+    //当前时间比下一帧的末尾还要晚，来不及显示了，那么丢弃当前帧
+    if (current_time > next_duration + frame_timer) {
+        dropped_frame++;
+        return getNextPic(remaining_time);
+    }
 
     return item;
 }
+

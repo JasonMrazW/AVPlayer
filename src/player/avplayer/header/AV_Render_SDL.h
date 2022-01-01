@@ -34,6 +34,8 @@ public:
 private:
     bool running = false;
     static const uint8_t TIME_INTERVAL = 30; //30ms
+    double refresh_rate = 0;
+
     SDL_TimerID timerId;
 
     AV_Render_Video *video_render;
@@ -43,13 +45,13 @@ private:
 
     bool onEvent(SDL_Event *sdlEvent);
 
-    bool onRender();
+    bool onRender(double remaining_time);
 
     bool onStop();
 
     bool onDestroy();
 
-    void onUpdate();
+    double onUpdate();
 };
 
 #endif //AVPLAYER_AV_RENDER_SDL_H

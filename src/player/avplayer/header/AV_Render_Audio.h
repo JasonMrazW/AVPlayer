@@ -24,7 +24,7 @@ public:
     ~AV_Render_Audio();
 
     bool init() override;
-    bool onUpdate() override;
+    bool onUpdate(double *remaining_time) override;
     bool onRender() override;
     bool onStop() override;
     bool onDestroy() override;

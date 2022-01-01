@@ -46,6 +46,15 @@ public:
         m_cond_not_full.notify_one();
     }
 
+    void getFront(T &item) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        //只要队列不为空，就可以取数据
+        m_cond_has_item.template wait(lock, [this]{return !m_container.empty();});
+
+        item = m_container.front();
+        lock.unlock();
+    }
+
     size_t current_size;
 private:
     uint8_t max_size;

@@ -22,11 +22,14 @@ public:
     }
 
     bool init() override;
-    bool onUpdate() override;
+    bool onUpdate(double *remaining_time) override;
     bool onRender() override;
     bool onStop() override;
     bool onDestroy() override;
     void setBuffer(ThreadSafeQueue<YUVItem> *queue);
+
+    void updateVideoFps(uint8_t video_fps);
+
 private:
     SDL_Window*        window;
     SDL_Renderer*    renderer;
@@ -40,11 +43,13 @@ private:
     int current_pin = 0;
     IClockCallBack *getSystemClock;
     Clock *video_clock;
+    double frame_timer = 0;
+    uint32_t dropped_frame = 0;
 
     ThreadSafeQueue<YUVItem> *yuv_fileQueue = nullptr;
     bool openVideoDevice(int width, int height, Uint32 format);
 
-    YUVItem *getNextPic();
+    YUVItem *getNextPic(double *remaining_time);
 };
 
 

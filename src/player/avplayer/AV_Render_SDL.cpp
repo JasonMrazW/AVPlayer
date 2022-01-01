@@ -20,7 +20,8 @@ bool AV_Render_SDL::init(uint8_t video_fps) {
         return false;
     }
     //初始化定时器，用于刷新视频帧
-    timerId = SDL_AddTimer(video_fps, &SDL_TimerCallback, this);
+//    timerId = SDL_AddTimer(video_fps, &SDL_TimerCallback, this);
+    refresh_rate = 1000/video_fps; //单位ms
 
     //初始化Video和Audio
     audio_render = new AV_Render_Audio();
@@ -36,6 +37,7 @@ void AV_Render_SDL::start() {
     video_render->init();
 
     while (running) {
+        sendEvent(SDL_USER_EVENT_ON_FRAME_AVAILABLE, nullptr);
         while (SDL_PollEvent(&event)) {
             onEvent(&event);
         }
@@ -78,10 +80,11 @@ bool AV_Render_SDL::onEvent(SDL_Event *sdlEvent) {
     if (sdlEvent->type >= SDL_USEREVENT) {
         SDL_UserEvent userEvent = sdlEvent->user;
         switch (userEvent.code) {
-            case SDL_USER_EVENT_ON_FRAME_AVAILABLE:
-                onUpdate();
-                onRender();
+            case SDL_USER_EVENT_ON_FRAME_AVAILABLE:{
+                double t = onUpdate();
+                onRender(t);
                 break;
+            }
             default:
                 break;
         }
@@ -119,15 +122,20 @@ bool AV_Render_SDL::onDestroy() {
     return true;
 }
 
-void AV_Render_SDL::onUpdate() {
-    video_render->onUpdate();
-    audio_render->onUpdate();
+double AV_Render_SDL::onUpdate() {
+    double remaining_time = refresh_rate;
+    video_render->onUpdate(&remaining_time);
+    audio_render->onUpdate(&remaining_time);
+    return remaining_time;
 }
 
 //控制视频的帧率
-bool AV_Render_SDL::onRender() {
+bool AV_Render_SDL::onRender(double remaining_time) {
     video_render->onRender();
     audio_render->onRender();
+    //wait
+    std::this_thread::sleep_for(std::chrono::microseconds((int)remaining_time));
+    sendEvent(SDL_USER_EVENT_ON_FRAME_AVAILABLE, nullptr);
     return true;
 }
 

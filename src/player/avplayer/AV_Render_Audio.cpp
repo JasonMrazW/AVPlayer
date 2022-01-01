@@ -100,7 +100,7 @@ void AV_Render_Audio::fillDataCallBack(void *userdata, uint8_t * stream, int len
 void AV_Render_Audio::setBuffer(ThreadSafeQueue<PCMItem> *queue) {
     pcm_queue = queue;
 }
-bool AV_Render_Audio::onUpdate() {
+bool AV_Render_Audio::onUpdate(double *remaning_time) {
     if (audioDeviceId < 2) {
         PCMItem item;
         pcm_queue->dequeue(item);
