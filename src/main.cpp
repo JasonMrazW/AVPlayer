@@ -76,7 +76,7 @@ void startPlayer() {
 
 void startPusher() {
     IPusher *pusher = new LocalFilePusher();
-    pusher->start("rtmp://localhost:1935/live/channel key");
+    pusher->start("rtmp://localhost:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk");
     pusher->stop();
 }
 

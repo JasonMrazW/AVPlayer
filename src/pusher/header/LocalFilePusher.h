@@ -24,6 +24,10 @@ private:
     void start(std::string dest_url) override;
 
     void stop() override;
+
+    void readAVPacket(AVFormatContext *inputContext, std::string dest_url);
+
+    AVFormatContext * initOutputFormat(const AVFormatContext *inputContext, const std::string &dest_url) const;
 };
 
 
