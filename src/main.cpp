@@ -20,6 +20,8 @@
 #include "player/avplayer/header/AV_Demuxer.h"
 #include "thread/ThreadSafeQueue.h"
 #include "player/avplayer/header/AV_Player.h"
+#include "pusher/header/IPusher.h"
+#include "pusher/header/LocalFilePusher.h"
 
 extern "C" {
     #include <libavformat/avformat.h>
@@ -67,6 +69,17 @@ void dequeue(ThreadSafeQueue<int> &queue) {
     queue.dequeue(value);
 }
 
+void startPlayer() {
+    AV_Player player;
+    player.start("resources/video/sound_sync_test.flv");
+}
+
+void startPusher() {
+    IPusher *pusher = new LocalFilePusher();
+    pusher->start("rtmp://localhost:1935/live/channel key");
+    pusher->stop();
+}
+
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
@@ -74,9 +87,9 @@ int main() {
 //    AV_Render_SDL render;
 //    render.start();
 
-    AV_Player player;
-    player.start("resources/video/sound_sync_test.flv");
+//    startPlayer();
 
+    startPusher();
 
 //    cout << last_pts << endl;
     //start image player
