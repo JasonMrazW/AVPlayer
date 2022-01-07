@@ -71,13 +71,11 @@ void LocalFilePusher::readAVPacket(AVFormatContext *inputContext, std::string de
     }
 
     AVPacket *temp_packet = av_packet_alloc();
+
+    int64_t start_time = av_gettime();
     while (av_read_frame(inputContext, temp_packet) >= 0) {
-
-
         if (temp_packet->stream_index == video_stream_index) {
-
-        } else if (temp_packet->stream_index == audio_stream_index) {
-
+//            std::cout << "time base:" << output_format->streams[video_stream_index]->time_base << std::endl;
         }
     }
 }

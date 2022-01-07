@@ -9,6 +9,7 @@
 extern "C" {
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
+#include "libavutil/time.h"
 };
 
 class LocalFilePusher: public IPusher {
