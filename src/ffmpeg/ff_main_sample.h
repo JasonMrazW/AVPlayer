@@ -10,7 +10,7 @@ extern "C" {
     #include <libavutil/avutil.h>
     #include <libavutil/imgutils.h>
     #include <libswscale/swscale.h>
-#include <libswresample/swresample.h>
+    #include <libswresample/swresample.h>
 };
 #include <iostream>
 #include "../parser/header/IImageParser.h"

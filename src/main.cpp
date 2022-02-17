@@ -89,13 +89,14 @@ int main() {
 
 //    startPlayer();
 
-    startPusher();
+//    startPusher();
 
 //    cout << last_pts << endl;
     //start image player
-//    SDLImagePlayer player;
-//    IImageParser *parser = new YUVImageParser();
-//    player.
+    SDLImagePlayer player;
+    IImageParser *parser = new RGBImageParser();
+    parser->loadFile();
+    player.OnExecute(parser);
 //
 //    //start audio player
 //    SDLAudioStreamPlayer audioPlayer;

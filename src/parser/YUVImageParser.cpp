@@ -14,6 +14,7 @@ YUVImageParser::YUVImageParser() {
     YUVFileData *fileData = new YUVFileData();
     fileData->data = IImageParser::loadFile(tmp_filePath, tmp_file_width, tmp_file_height);
 
+    //changeLumaForYUV420P(fileData->data, tmp_file_width, tmp_file_height, 1);
     toGray(fileData->data, tmp_file_width, tmp_file_height);
 
     fileData->width = tmp_file_width;
@@ -51,7 +52,7 @@ uint8_t * YUVImageParser::toGray(uint8_t *fileContent, int width, int height) {
     // U、V 分量共同占有得大小：width * height
     int uv_length = width * height;
 
-    int fileLength = -1;
+    int fileLength = y_length + uv_length;
     for (int i = y_length; i < fileLength; ++i) {
         //至为128即为初始值
         fileContent[i] = 128;

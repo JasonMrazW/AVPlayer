@@ -133,7 +133,7 @@ void FFMainSample::decodeVideo(AVStream *video_stream, AVFormatContext *format_c
             yuv_frame_data->data = out_buffer;
             yuv_frame_data->pin = av_frame->width;
 
-            //player->updateYUVFileData(*yuv_frame_data);
+            player->updateYUVFileData(*yuv_frame_data);
 
             av_frame_unref(yuv_frame);
             av_frame_unref(av_frame);
