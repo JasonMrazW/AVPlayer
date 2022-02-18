@@ -83,6 +83,9 @@ void startPusher() {
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
+    LocalFilePusher *pusher = new LocalFilePusher();
+    pusher->start("rtmp://localhost:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk");
+
     //start sdl render
 //    AV_Render_SDL render;
 //    render.start();
@@ -93,10 +96,10 @@ int main() {
 
 //    cout << last_pts << endl;
     //start image player
-    SDLImagePlayer player;
-    IImageParser *parser = new RGBImageParser();
-    parser->loadFile();
-    player.OnExecute(parser);
+//    SDLImagePlayer player;
+//    IImageParser *parser = new RGBImageParser();
+//    parser->loadFile();
+//    player.OnExecute(parser);
 //
 //    //start audio player
 //    SDLAudioStreamPlayer audioPlayer;
