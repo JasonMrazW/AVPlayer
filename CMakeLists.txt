@@ -67,11 +67,12 @@ set(SOURCE_FILES
         src/player/avplayer/AV_Render_Video.cpp
         src/player/avplayer/header/AV_Render_Video.h
         src/player/avplayer/AV_Render_Audio.cpp
-        src/player/avplayer/header/AV_Render_Audio.h src/player/avplayer/header/AV_Render_Interface.h src/player/avplayer/AV_Demuxer.cpp src/player/avplayer/header/AV_Demuxer.h src/thread/ThreadSafeQueue.h src/player/avplayer/header/AV_Decoder.h src/player/avplayer/AV_Decoder_Video.cpp src/player/avplayer/header/AV_Decoder_Video.h src/player/avplayer/AV_Decoder_Audio.cpp src/player/avplayer/header/AV_Decoder_Audio.h src/player/avplayer/header/AV_Render_RawItem.h src/player/avplayer/header/AV_Render_IClockCallback.h src/player/avplayer/header/AV_Sync_Clock.h src/pusher/header/IPusher.h src/pusher/LocalFilePusher.cpp src/pusher/header/LocalFilePusher.h src/util/FFLoger.h)
+        src/player/avplayer/header/AV_Render_Audio.h src/player/avplayer/header/AV_Render_Interface.h src/player/avplayer/AV_Demuxer.cpp src/player/avplayer/header/AV_Demuxer.h src/thread/ThreadSafeQueue.h src/player/avplayer/header/AV_Decoder.h src/player/avplayer/AV_Decoder_Video.cpp src/player/avplayer/header/AV_Decoder_Video.h src/player/avplayer/AV_Decoder_Audio.cpp src/player/avplayer/header/AV_Decoder_Audio.h src/player/avplayer/header/AV_Render_RawItem.h src/player/avplayer/header/AV_Render_IClockCallback.h src/player/avplayer/header/AV_Sync_Clock.h src/pusher/header/Pusher.h src/pusher/LocalFilePusher.cpp src/pusher/header/LocalFilePusher.h src/util/FFLoger.h src/pusher/ScreenPusher.cpp src/pusher/header/ScreenPusher.h src/util/ContainerPrinter.h
+        src/pusher/Pusher.cpp)
 
 Message("   ")
 Message(STATUS "SOURCE entry point : " ${SOURCE_FILES})
-Message("  2312312")
+Message("  333")
 
 # ------- End Set Vars --- #
 
@@ -114,6 +115,7 @@ target_link_libraries(
         postproc
         swresample
         swscale
+        avdevice
 )
 
 message("${SDL2_INCLUDE_DIRS}")

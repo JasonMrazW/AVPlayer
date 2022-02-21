@@ -4,15 +4,10 @@
 
 #ifndef AVPLAYER_LOCALFILEPUSHER_H
 #define AVPLAYER_LOCALFILEPUSHER_H
-#include "IPusher.h"
-#include "../../util/FFLoger.h"
-extern "C" {
-#include "libavformat/avformat.h"
-#include "libavutil/avutil.h"
-#include "libavutil/time.h"
-};
+#include "Pusher.h"
 
-class LocalFilePusher: public IPusher {
+
+class LocalFilePusher: public Pusher {
 public:
     LocalFilePusher() {
 
@@ -21,13 +16,8 @@ public:
 
     }
 
-    void start(std::string dest_url) override;
-
-    void stop() override;
-private:
-    void readAVPacket(AVFormatContext *inputContext, const std::string& dest_url);
-
-    AVFormatContext * initOutputFormat(const AVFormatContext *inputContext, const std::string &dest_url) const;
+protected:
+    AVFormatContext *initInputContext() override = 0;
 };
 
 

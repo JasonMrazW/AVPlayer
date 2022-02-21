@@ -20,8 +20,9 @@
 #include "player/avplayer/header/AV_Demuxer.h"
 #include "thread/ThreadSafeQueue.h"
 #include "player/avplayer/header/AV_Player.h"
-#include "pusher/header/IPusher.h"
+#include "pusher/header/Pusher.h"
 #include "pusher/header/LocalFilePusher.h"
+#include "pusher/header/ScreenPusher.h"
 
 extern "C" {
     #include <libavformat/avformat.h>
@@ -75,7 +76,7 @@ void startPlayer() {
 }
 
 void startPusher() {
-    IPusher *pusher = new LocalFilePusher();
+    Pusher *pusher = new ScreenPusher();
     pusher->start("rtmp://localhost:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk");
     pusher->stop();
 }
@@ -83,9 +84,7 @@ void startPusher() {
 int main() {
     std::cout << "start!" << sizeof (char) <<"||||||" << std::endl;
 
-    LocalFilePusher *pusher = new LocalFilePusher();
-    pusher->start("rtmp://localhost:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk");
-
+    startPusher();
     //start sdl render
 //    AV_Render_SDL render;
 //    render.start();
