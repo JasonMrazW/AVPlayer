@@ -8,7 +8,10 @@
 #include "../../util/ContainerPrinter.h"
 extern "C" {
     #include "libavdevice/avdevice.h"
-};
+    #include <libavutil/imgutils.h>
+    #include <libswscale/swscale.h>
+    #include <libswresample/swresample.h>
+}
 
 
 class ScreenPusher : public Pusher{
@@ -22,6 +25,9 @@ protected:
     AVFormatContext *initOutputContext(AVFormatContext *inputContext, std::string destUrl) override;
 
     void sendAVPacket(AVFormatContext *inputContext, AVFormatContext *outputContext, std::string destUrl) override;
+
+private:
+    AVCodecContext *initEncoder(AVFormatContext *outputContext, AVStream *stream);
 };
 
 
