@@ -17,7 +17,11 @@ public:
     }
 
 protected:
-    AVFormatContext *initInputContext() override = 0;
+    AVFormatContext *initInputContext() override;
+
+    AVFormatContext *initOutputContext(AVFormatContext *inputContext, std::string destUrl) override;
+
+    void sendAVPacket(AVFormatContext *inputContext, AVFormatContext *outputContext, std::string destUrl) override;
 };
 
 

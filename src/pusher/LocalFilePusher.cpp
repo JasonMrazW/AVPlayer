@@ -25,3 +25,11 @@ AVFormatContext *LocalFilePusher::initInputContext() {
     return input_context;
 }
 
+AVFormatContext *LocalFilePusher::initOutputContext(AVFormatContext *inputContext, std::string destUrl) {
+    return Pusher::initOutputContext(inputContext, destUrl);
+}
+
+void LocalFilePusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *outputContext, std::string destUrl) {
+    Pusher::sendAVPacket(inputContext, outputContext, destUrl);
+}
+

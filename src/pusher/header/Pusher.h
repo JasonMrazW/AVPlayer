@@ -26,8 +26,8 @@ public:
 protected:
     virtual AVFormatContext* initInputContext() = 0;
 
-    AVFormatContext* initOutputContext(AVFormatContext *inputContext, std::string destUrl);
+    virtual AVFormatContext* initOutputContext(AVFormatContext *inputContext, std::string destUrl);
 
-    void sendAVPacket(AVFormatContext *inputContext, AVFormatContext *outputContext, std::string destUrl);
+    virtual void sendAVPacket(AVFormatContext *inputContext, AVFormatContext *outputContext, std::string destUrl);
 };
 #endif //AVPLAYER_PUSHER_H
