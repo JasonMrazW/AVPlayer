@@ -34,7 +34,8 @@ AVFormatContext *ScreenPusher::initOutputContext(AVFormatContext *inputContext, 
 void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *outputContext, std::string destUrl) {
     //set frame rate,1秒30帧,单位microseconds
     int ret = -1;
-    uint32_t frame_interval_time = 1000*1000/30;
+    uint64_t video_frame_interval_time = 1000*1000/30;
+    uint64_t audio_frame_interval_time = 1000*1000*512/48000;
 
     uint32_t video_index = -1;
     uint32_t audio_index = -1;
@@ -156,7 +157,17 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
     int frame_index = 0;
     ret = 0;
     bool running = true;
-    uint32_t pre_dts = 0;
+    uint64_t video_pts = 0;
+    uint64_t audio_pts = 0;
+    uint64_t video_time = 0;
+    uint64_t audio_time = 0;
+
+    double video_time_base = av_q2d(inputContext->streams[video_index]->time_base);
+    double audio_time_base = av_q2d(inputContext->streams[audio_index]->time_base);
+
+    uint64_t pre_video_dts = 0;
+    uint64_t pre_audio_dts = 0;
+
     while(running) {
         ret = av_read_frame(inputContext, inputAVPacket);
         if (ret < 0) {
@@ -166,6 +177,7 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
 
 //        cout << "frame index:" << frame_index++ << endl;
         if (inputAVPacket->stream_index == video_index) {
+//            continue;
             ret = avcodec_send_packet(videoDecoderContext, inputAVPacket);
             if (ret < 0) {
                 FFLoger::printErrorMessage("failed to decode.", ret);
@@ -188,12 +200,7 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                 outputAVFrame->height = inputAVFrame->height;
                 outputAVFrame->pts = inputAVFrame->pts;
                 outputAVFrame->pkt_dts = inputAVFrame->pkt_dts;
-                if (pre_dts == 0) {
-                    pre_dts = outputAVFrame->pkt_dts;
-                }
-                uint32_t interval_dts = outputAVFrame->pkt_dts - pre_dts;
-                cout << "packet dts interval:" << interval_dts << endl;
-                pre_dts = outputAVFrame->pkt_dts;
+
                 //送入编码器
                 ret = avcodec_send_frame(videoEncoderContext, outputAVFrame);
                 if (ret < 0) {
@@ -201,32 +208,37 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                     break;
                 }
                 while (ret >= 0) {
+                    //从编码器取编码后的数据
                     ret = avcodec_receive_packet(videoEncoderContext, outputAVPacket);
+
                     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                         //receive frame end
                         break;
                     }
                     if (outputAVPacket->pts != AV_NOPTS_VALUE)
                         outputAVPacket->pts = av_rescale_q(outputAVPacket->pts,
-                                                           inputContext->streams[inputAVPacket->stream_index]->codec->time_base,
-                                                           inputContext->streams[inputAVPacket->stream_index]->time_base);
+                                                           inputContext->streams[inputAVPacket->stream_index]->time_base,
+                                                           outputContext->streams[inputAVPacket->stream_index]->time_base);
                     if (outputAVPacket->dts != AV_NOPTS_VALUE)
                         outputAVPacket->dts = av_rescale_q(outputAVPacket->dts,
-                                                           inputContext->streams[inputAVPacket->stream_index]->codec->time_base,
-                                                           inputContext->streams[inputAVPacket->stream_index]->time_base);
-
-
+                                                           inputContext->streams[inputAVPacket->stream_index]->time_base,
+                                                           outputContext->streams[inputAVPacket->stream_index]->time_base);
+                    outputAVPacket->stream_index = inputAVPacket->stream_index;
+                    pre_video_dts = outputAVPacket->dts;
 
                     ret = av_interleaved_write_frame(outputContext, outputAVPacket);
                     if (ret < 0) {
                         FFLoger::printErrorMessage("failed to write video frame.", ret);
                         continue;
                     }
+
+                    cout << "vide frame index:" << frame_index++ << endl;
                 }
 
                 av_frame_unref(inputAVFrame);
             }
         } else {
+//            continue;
             ret = avcodec_send_packet(audioDecoderContext, inputAVPacket);
             if (ret < 0) {
                 FFLoger::printErrorMessage("failed to decode.", ret);
@@ -247,9 +259,7 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                 }
 
                 audioOutputAVFrame->pts = audioInputAVFrame->pts;
-                audioOutputAVFrame->pkt_dts = audioInputAVFrame->pts;
                 audioOutputAVFrame->pkt_size = audioInputAVFrame->nb_samples * 4;
-
 
                 //送入编码器
                 ret = avcodec_send_frame(audioEncoderContext, audioOutputAVFrame);
@@ -264,6 +274,18 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                         //receive frame end
                         break;
                     }
+                    if (audioOutputAVPacket->pts != AV_NOPTS_VALUE)
+                        audioOutputAVPacket->pts = av_rescale_q(audioOutputAVPacket->pts,
+                                                           inputContext->streams[inputAVPacket->stream_index]->time_base,
+                                                           outputContext->streams[inputAVPacket->stream_index]->time_base);
+                    if (audioOutputAVPacket->dts != AV_NOPTS_VALUE)
+                        audioOutputAVPacket->dts = av_rescale_q(audioOutputAVPacket->dts,
+                                                           inputContext->streams[inputAVPacket->stream_index]->time_base,
+                                                           outputContext->streams[inputAVPacket->stream_index]->time_base);
+
+                    //audioOutputAVPacket->duration = audioOutputAVPacket->pts - pre_audio_dts;
+                    audioOutputAVPacket->stream_index = inputAVPacket->stream_index;
+                    pre_audio_dts = audioOutputAVPacket->pts;
 
                     ret = av_interleaved_write_frame(outputContext, audioOutputAVPacket);
                     if (ret < 0) {
@@ -291,7 +313,7 @@ AVCodecContext * ScreenPusher::initEncoder(AVFormatContext *outputContext, AVStr
         encoderContext->width = stream->codecpar->width;
         encoderContext->height = stream->codecpar->height;
         encoderContext->pix_fmt = AV_PIX_FMT_YUV420P;
-        encoderContext->gop_size = 10;
+        encoderContext->gop_size = 60;
         encoderContext->codec_id = AV_CODEC_ID_H264;
         encoderContext->codec_type = AVMEDIA_TYPE_VIDEO;
         encoderContext->max_b_frames = 2;

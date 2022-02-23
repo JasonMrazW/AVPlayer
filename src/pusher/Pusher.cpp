@@ -100,6 +100,7 @@ void Pusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *output
 
     uint64_t frame_index = 0;
     uint64_t start_time = av_gettime();
+    uint64_t pre_pts = 0;
     while (av_read_frame(inputContext, temp_packet) >= 0) {
         //delay some time
         if (temp_packet->stream_index == video_stream_index) {
@@ -109,7 +110,11 @@ void Pusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *output
             if (interval_time < frame_interval_time) {
                 av_usleep(frame_interval_time - interval_time);
             }
-            cout << "frame index:" << frame_index++ << endl;
+//            cout << "frame index:" << frame_index++ << endl;
+        cout << "frame index:" << temp_packet->pts << endl;
+
+        } else {
+            pre_pts = temp_packet->pts;
         }
 
         int ret = av_interleaved_write_frame(outputContext, temp_packet);
