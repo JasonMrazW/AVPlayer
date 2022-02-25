@@ -78,6 +78,7 @@ void startPlayer() {
 void startPusher() {
     Pusher *pusher = new ScreenPusher();
     pusher->start("rtmp://localhost:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk");
+//pusher->start("rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_27759712_7373486&key=11db055fa412046f1c5daf4305b1463c&schedule=rtmp&pflag=1");
     pusher->stop();
 }
 
@@ -96,7 +97,7 @@ int main() {
 //    cout << last_pts << endl;
     //start image player
 //    SDLImagePlayer player;
-//    IImageParser *parser = new RGBImageParser();
+//    IImageParser *parser = new YUVImageParser();
 //    parser->loadFile();
 //    player.OnExecute(parser);
 //
@@ -159,7 +160,7 @@ int main() {
 //
 //    double result = BinaryUtil::getDouble(temp,8);
 //    cout << "result:" << result << endl;
-
+//
     return 0;
 }
 

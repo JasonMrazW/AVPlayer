@@ -58,8 +58,8 @@ void FFMainSample::initContext() {
     }
 
     //decode video frame
-    decodeVideo(video_stream, format_context, video_stream_index);
-    //decodeAudio(audio_stream, format_context, audio_stream_index);
+    //decodeVideo(video_stream, format_context, video_stream_index);
+    decodeAudio(audio_stream, format_context, audio_stream_index);
     avformat_close_input(&format_context);
 }
 

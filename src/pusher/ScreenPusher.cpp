@@ -5,11 +5,58 @@
 #include "header/ScreenPusher.h"
 using namespace std;
 
+
+static int check_sample_fmt(const AVCodec *codec, enum AVSampleFormat sample_fmt)
+        {
+    const enum AVSampleFormat *p = codec->sample_fmts;
+    while (*p != AV_SAMPLE_FMT_NONE) {
+        if (*p == sample_fmt)
+            return 1;
+        p++;
+    }
+    return 0;
+        }
+        /* just pick the highest supported samplerate */
+        static int select_sample_rate(const AVCodec *codec)
+        {
+            const int *p;
+            int best_samplerate = 0;
+            if (!codec->supported_samplerates)
+                return 44100;
+            p = codec->supported_samplerates;
+            while (*p) {
+                if (!best_samplerate || abs(44100 - *p) < abs(44100 - best_samplerate))
+                    best_samplerate = *p;
+                p++;
+            }
+            return best_samplerate;
+        }
+        /* select layout with the highest channel count */
+        static int select_channel_layout(const AVCodec *codec)
+        {
+            const uint64_t *p;
+            uint64_t best_ch_layout = 0;
+            int best_nb_channels   = 0;
+            if (!codec->channel_layouts)
+                return AV_CH_LAYOUT_STEREO;
+            p = codec->channel_layouts;
+            while (*p) {
+                int nb_channels = av_get_channel_layout_nb_channels(*p);
+                if (nb_channels > best_nb_channels) {
+                    best_ch_layout    = *p;
+                    best_nb_channels = nb_channels;
+                }
+                p++;
+            }
+            return best_ch_layout;
+        }
+
+
 AVFormatContext *ScreenPusher::initInputContext() {
     AVFormatContext *input_context = avformat_alloc_context();
     avdevice_register_all();
     AVDictionary *dictionary = nullptr;
-    //av_dict_set(&dictionary, "list_devices", "true", 0);
+//    av_dict_set(&dictionary, "list_devices", "true", 0);
 
     AVInputFormat *inputFormat = av_find_input_format("avfoundation");
     int ret = avformat_open_input(&input_context, "0:0", inputFormat, &dictionary);
@@ -125,17 +172,11 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
     AVFrame *audioInputAVFrame = av_frame_alloc();
     AVPacket *audioOutputAVPacket = av_packet_alloc();
 
-    AVSampleFormat audioOutputSampleFormat = AV_SAMPLE_FMT_FLTP;
-    audioOutputAVFrame->format = AV_SAMPLE_FMT_FLTP;
-    audioOutputAVFrame->channels = 1;
-    audioOutputAVFrame->channel_layout = AV_CH_LAYOUT_MONO;
-    audioOutputAVFrame->nb_samples = 512;
-    audioOutputAVFrame->sample_rate = 48000;
-
+    AVSampleFormat audioOutputSampleFormat = audioEncoderContext->sample_fmt;
     AVCodecParameters *inputAudioCodecParam = inputContext->streams[audio_index]->codecpar;
     AVSampleFormat audioInputSampleFormat = static_cast<AVSampleFormat>(inputAudioCodecParam->format);
 
-    SwrContext *swrContext = swr_alloc_set_opts(nullptr, AV_CH_LAYOUT_MONO, audioOutputSampleFormat,
+    SwrContext *swrContext = swr_alloc_set_opts(nullptr, audioEncoderContext->channel_layout, audioOutputSampleFormat,
                                                 audioEncoderContext->sample_rate,
                                                 inputAudioCodecParam->channel_layout, audioInputSampleFormat,
                                                 inputAudioCodecParam->sample_rate, 0, nullptr);
@@ -145,39 +186,34 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
         FFLoger::printErrorMessage("failed to init swr context.", ret);
         return;
     }
-
-    uint32_t buffer_size = av_samples_get_buffer_size(nullptr, inputAudioCodecParam->channels, 512,
+    uint32_t buffer_size = av_samples_get_buffer_size(nullptr, audioEncoderContext->channels, audioEncoderContext->frame_size,
                                                       audioOutputSampleFormat, 1);
     uint8_t *audioOutBuffer = static_cast<uint8_t *>(av_malloc(buffer_size));
     memset(audioOutBuffer, 0, buffer_size);
     av_samples_fill_arrays(audioOutputAVFrame->data, audioOutputAVFrame->linesize, audioOutBuffer,
-                           audioEncoderContext->channels, 512, audioOutputSampleFormat, 1);
+                           audioEncoderContext->channels, audioEncoderContext->frame_size, audioOutputSampleFormat, 1);
 
+    audioOutputAVFrame->format = audioOutputSampleFormat;
+    audioOutputAVFrame->channels = audioEncoderContext->channels;
+    audioOutputAVFrame->channel_layout = audioEncoderContext->channel_layout;
+    audioOutputAVFrame->nb_samples = audioEncoderContext->frame_size;
+    audioOutputAVFrame->sample_rate = audioEncoderContext->sample_rate;
     //********
     int frame_index = 0;
     ret = 0;
     bool running = true;
-    uint64_t video_pts = 0;
-    uint64_t audio_pts = 0;
-    uint64_t video_time = 0;
-    uint64_t audio_time = 0;
+    //unit:microseconds
+    uint64_t start_time = av_gettime();
 
-    double video_time_base = av_q2d(inputContext->streams[video_index]->time_base);
-    double audio_time_base = av_q2d(inputContext->streams[audio_index]->time_base);
-
-    uint64_t pre_video_dts = 0;
-    uint64_t pre_audio_dts = 0;
-
+    uint64_t latest_pts = inputContext->streams[video_index]->start_time;
     while(running) {
         ret = av_read_frame(inputContext, inputAVPacket);
         if (ret < 0) {
             av_usleep(200);
             continue;
         }
-
 //        cout << "frame index:" << frame_index++ << endl;
         if (inputAVPacket->stream_index == video_index) {
-//            continue;
             ret = avcodec_send_packet(videoDecoderContext, inputAVPacket);
             if (ret < 0) {
                 FFLoger::printErrorMessage("failed to decode.", ret);
@@ -224,7 +260,8 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                                                            inputContext->streams[inputAVPacket->stream_index]->time_base,
                                                            outputContext->streams[inputAVPacket->stream_index]->time_base);
                     outputAVPacket->stream_index = inputAVPacket->stream_index;
-                    pre_video_dts = outputAVPacket->dts;
+
+                    frame_index++;
 
                     ret = av_interleaved_write_frame(outputContext, outputAVPacket);
                     if (ret < 0) {
@@ -251,7 +288,7 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                     break;
                 }
 
-                int samples = swr_convert(swrContext, &audioOutBuffer, audioInputAVFrame->nb_samples,
+                int samples = swr_convert(swrContext, audioOutputAVFrame->data, audioOutputAVFrame->nb_samples,
                                           (const uint8_t **)audioInputAVFrame->extended_data, audioInputAVFrame->nb_samples);
                 if (samples <= 0) {
                     cerr << "convert audio info failed." << endl;
@@ -259,6 +296,7 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                 }
 
                 audioOutputAVFrame->pts = audioInputAVFrame->pts;
+                audioOutputAVFrame->pkt_dts = audioInputAVFrame->pkt_dts;
                 audioOutputAVFrame->pkt_size = audioInputAVFrame->nb_samples * 4;
 
                 //送入编码器
@@ -274,6 +312,10 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
                         //receive frame end
                         break;
                     }
+                    if (ret < 0) {
+                        FFLoger::printErrorMessage("failed to encode audio frame.", ret);
+                        break;
+                    }
                     if (audioOutputAVPacket->pts != AV_NOPTS_VALUE)
                         audioOutputAVPacket->pts = av_rescale_q(audioOutputAVPacket->pts,
                                                            inputContext->streams[inputAVPacket->stream_index]->time_base,
@@ -285,7 +327,6 @@ void ScreenPusher::sendAVPacket(AVFormatContext *inputContext, AVFormatContext *
 
                     //audioOutputAVPacket->duration = audioOutputAVPacket->pts - pre_audio_dts;
                     audioOutputAVPacket->stream_index = inputAVPacket->stream_index;
-                    pre_audio_dts = audioOutputAVPacket->pts;
 
                     ret = av_interleaved_write_frame(outputContext, audioOutputAVPacket);
                     if (ret < 0) {
@@ -313,7 +354,7 @@ AVCodecContext * ScreenPusher::initEncoder(AVFormatContext *outputContext, AVStr
         encoderContext->width = stream->codecpar->width;
         encoderContext->height = stream->codecpar->height;
         encoderContext->pix_fmt = AV_PIX_FMT_YUV420P;
-        encoderContext->gop_size = 60;
+        encoderContext->gop_size = 30;
         encoderContext->codec_id = AV_CODEC_ID_H264;
         encoderContext->codec_type = AVMEDIA_TYPE_VIDEO;
         encoderContext->max_b_frames = 2;
@@ -335,12 +376,12 @@ AVCodecContext * ScreenPusher::initEncoder(AVFormatContext *outputContext, AVStr
     } else {
         AVCodec *encoder = avcodec_find_encoder(AV_CODEC_ID_AAC);
         encoderContext = avcodec_alloc_context3(encoder);
-        encoderContext->sample_rate = 48000;
-        encoderContext->profile = FF_PROFILE_AAC_HE;
-        encoderContext->time_base = {1, 48000};
+        encoderContext->sample_rate = select_sample_rate(encoder);
+        encoderContext->profile = FF_PROFILE_AAC_MAIN;
+        encoderContext->time_base = {1, encoderContext->sample_rate};
         encoderContext->sample_fmt = encoder->sample_fmts[0];
-        encoderContext->channels = 1;
-        encoderContext->channel_layout = AV_CH_LAYOUT_MONO;
+        encoderContext->channel_layout = select_channel_layout(encoder);
+        encoderContext->channels = av_get_channel_layout_nb_channels(encoderContext->channel_layout);
         encoderContext->codec_id = AV_CODEC_ID_AAC;
         encoderContext->codec_type = AVMEDIA_TYPE_AUDIO;
         encoderContext->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
@@ -353,13 +394,13 @@ AVCodecContext * ScreenPusher::initEncoder(AVFormatContext *outputContext, AVStr
 
         AVStream *outStream = avformat_new_stream(outputContext, encoder);
         outStream->codecpar->bit_rate = stream->codecpar->bit_rate;
-        outStream->codecpar->sample_rate = 48000;
+        outStream->codecpar->sample_rate = encoderContext->sample_rate;
         outStream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
         outStream->codecpar->codec_id = AV_CODEC_ID_AAC;
         outStream->codecpar->format = encoder->sample_fmts[0];
-        outStream->codecpar->channels = 1;
-        outStream->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
-        outStream->codecpar->frame_size = 512;
+        outStream->codecpar->channels = encoderContext->channels;
+        outStream->codecpar->channel_layout = encoderContext->channel_layout;
+        outStream->codecpar->frame_size = encoderContext->frame_size;
     }
 
     encoderContext->codec_tag = 0;
